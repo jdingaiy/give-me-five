@@ -65,3 +65,6 @@
 .comment-text{position:relative}.palm-gesture-hint{left:0;top:auto;bottom:calc(100% + 8px);transform:none;transform-origin:28px 100%}.palm-gesture-hint:before{left:28px;top:auto;bottom:-5px}.palm-gesture-hint.is-visible{animation:palm-gesture-hint-enter .42s both cubic-bezier(.18,.75,.28,1)}@keyframes palm-gesture-hint-enter{0%{opacity:0;transform:translateY(6px) scale(.88)}70%{opacity:1;transform:translateY(0) scale(1.035)}100%{opacity:1;transform:translateY(0) scale(1)}}@media(prefers-reduced-motion:reduce){.palm-gesture-hint.is-visible{animation:none}}
 
 .palm-dm-symbol{display:inline-flex;align-items:center}
+
+/* Fixed half-sheet top; only the action cards scroll. */
+.comment-actions-sheet{display:flex;flex-direction:column;padding:0;overflow:hidden}.sheet-fixed-top{flex:0 0 auto;background:#f5f5f6;padding:8px 15px 0;position:relative;z-index:1}.sheet-fixed-top .sheet-handle{margin:0 auto 18px}.sheet-fixed-top .sheet-share-people{margin-bottom:27px}.sheet-scroll-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;padding:0 15px 25px}.chat-input [aria-label="语音消息"]>svg{transform:rotate(90deg)}
