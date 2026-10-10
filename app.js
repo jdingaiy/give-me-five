@@ -240,7 +240,7 @@ function bindCommentMenus(){
  if(!data.palmHints?.[role]){
   const first=[...app.querySelectorAll('[data-swipe-comment]')].find(el=>canJoinPalm(findComment(el.dataset.swipeComment)));
   if(first){const hint=document.createElement('div');hint.className='palm-swipe-hint';hint.textContent='有共鸣？击个掌';first.querySelector('.palm-row').append(hint);
-   const mark=()=>{if(!hint.isConnected)return;hint.classList.add('is-visible');(data.palmHints??={})[role]=true;save();palmHintObserver?.disconnect();setTimeout(()=>{hint.classList.remove('is-visible');setTimeout(()=>hint.remove(),280);},2400);};
+   const mark=()=>{if(!hint.isConnected)return;hint.classList.add('is-visible');(data.palmHints??={})[role]=true;save();palmHintObserver?.disconnect();setTimeout(()=>{hint.classList.remove('is-visible');setTimeout(()=>hint.remove(),180);},3200);};
    if(window.IntersectionObserver){palmHintObserver=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting))mark();},{root:app.querySelector('.scroll'),threshold:.5});palmHintObserver.observe(first.querySelector('.palm-mark[data-action="palm"]'));}else mark();
   }
  }
