@@ -148,6 +148,7 @@ function togglePalm(id,options={}){
  if(!options.deferRender){recordScroll();if(joined)render();else animatePalmCollision(id,()=>{if(role===actingRole)render();});}
  if(joined)showToast('已取消击掌');else setTimeout(()=>{if(role===actingRole)showToast(firstSuccess?'对方回应大家时，会通知你。':'已击掌');},560);return true;
 }
+const PALM_SWIPE_THRESHOLD=88;
 let activePalmMotion;
 function clearPalmMotion(){if(activePalmMotion){activePalmMotion.layer.remove();activePalmMotion.host?.classList.remove('colliding','swipe-collision');activePalmMotion=null;}}
 function palmGeometry(host,dx=0){
@@ -159,9 +160,10 @@ function createPalmMotion(host){
  activePalmMotion={host,layer,b:layer.querySelector('.unit-b'),prompt:layer.querySelector('.palm-enter-prompt'),releasePrompt:layer.querySelector('.palm-release-prompt')};return activePalmMotion;
 }
 function updatePalmDrag(host,motion,dx){
- const g=palmGeometry(host,dx),base=g.x-dx,entry=g.size+21,travel=entry*Math.min(1,dx/88);
+ const g=palmGeometry(host,dx),base=g.x-dx,entry=g.size+21,travel=entry*Math.min(1,dx/PALM_SWIPE_THRESHOLD);
  motion.g=g;motion.base=base;motion.bx=base-entry+travel;const b=motion.b;b.style.left=base+'px';b.style.top=g.y+'px';b.style.width=b.style.height=g.size+'px';b.style.transform=`translateX(${travel-entry}px)`;
- const progress=Math.min(1,dx/88),settled=dx>=88;
+ const progress=Math.min(1,dx/PALM_SWIPE_THRESHOLD),settled=dx>=PALM_SWIPE_THRESHOLD;
+ motion.ready=settled;
  b.style.filter=`blur(${(4*(1-progress)).toFixed(2)}px)`;
  const prompt=motion.prompt,release=motion.releasePrompt;
  const position=motion.promptPosition??={enterX:Math.max(24,base+g.size/2),releaseX:base+g.size+8,y:g.y+g.size/2};
@@ -219,11 +221,11 @@ function bindCommentMenus(){
    dragging=true;host.classList.add('dragging');motion=createPalmMotion(host);host.setPointerCapture?.(e.pointerId);
   }
   e.preventDefault();dx=Math.max(0,Math.min(136,x));surface.style.transform=`translateX(${dx}px)`;
-  updatePalmDrag(host,motion,dx);reveal.style.opacity='0';host.classList.toggle('swipe-ready',dx>=88);label.textContent=dx>=88?'松手击掌':'右滑击掌';
+  updatePalmDrag(host,motion,dx);reveal.style.opacity='0';host.classList.toggle('swipe-ready',motion.ready);label.textContent=motion.ready?'松手击掌':'右滑击掌';
  },{passive:false});
  host.addEventListener('pointerup',e=>{
   if(!start||e.pointerId!==start.pointer)return;
-  cancelHold();const submit=dragging&&dx>=88,distance=dx;const didDrag=dragging;start=null;
+  cancelHold();const submit=dragging&&motion?.ready,distance=dx;const didDrag=dragging;start=null;
   if(didDrag)suppressUntil=Date.now()+500;
   if(!submit){reset();return;}
   if(!togglePalm(id,{joinOnly:true,deferRender:true})){reset();return;}
