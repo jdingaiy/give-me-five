@@ -146,7 +146,7 @@ function togglePalm(id,options={}){
  showToast(joined?'已取消击掌，不再接收后续提醒':'已击掌，有进展时会收到提醒');return true;
 }
 let activePalmMotion;
-function clearPalmMotion(){if(activePalmMotion){activePalmMotion.layer.remove();activePalmMotion.host?.classList.remove('colliding');activePalmMotion=null;}}
+function clearPalmMotion(){if(activePalmMotion){activePalmMotion.layer.remove();activePalmMotion.host?.classList.remove('colliding','swipe-collision');activePalmMotion=null;}}
 function palmGeometry(host,dx=0){
  const phone=document.querySelector('.phone').getBoundingClientRect(),source=host.querySelector('.comment-swipe-surface>.avatar'),rect=source.getBoundingClientRect(),base=host.getBoundingClientRect();
  return {x:(rect.width?rect.left:base.left+dx)-phone.left,y:(rect.width?rect.top:base.top)-phone.top,size:rect.width||(source.classList.contains('small')?24:39)};
@@ -178,12 +178,12 @@ function animatePalmCollision(id,finish=()=>{},distance=0,motion=null){
  const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
  motion??=createPalmMotion(host);const g=palmGeometry(host,distance);
  const base=motion.base??g.x-distance,bstart=motion.bx??base-g.size-21,bhit=base+2,ahit=base+g.size-6;
- motion.prompt.hidden=true;motion.releasePrompt.hidden=true;motion.b.style.filter='';const layer=motion.layer;layer.classList.add('palm-collision');host.classList.add('colliding');
+ motion.prompt.hidden=true;motion.releasePrompt.hidden=true;motion.b.style.filter='';const layer=motion.layer;layer.classList.add('palm-collision');host.classList.add('colliding');host.classList.toggle('swipe-collision',distance>0);
  layer.style.setProperty('--b-start',bstart+'px');layer.style.setProperty('--a-start',g.x+'px');layer.style.setProperty('--b-hit',bhit+'px');layer.style.setProperty('--a-hit',ahit+'px');layer.style.setProperty('--a-rest',base+'px');layer.style.setProperty('--b-exit',(base-g.size-21)+'px');host.style.setProperty('--swipe-distance',distance+'px');
  const b=motion.b;b.style.left='0';b.style.top=g.y+'px';b.style.width=b.style.height=g.size+'px';b.style.transform='';b.classList.add('avatar-hit-b');
  layer.insertAdjacentHTML('beforeend',`${avatar(c.author,'collision-a avatar-hit-a')}<span class="collision-hands"><span>✋</span><span>🤚</span></span>`);
  const a=layer.querySelector('.collision-a');a.style.top=g.y+'px';a.style.width=a.style.height=g.size+'px';const hands=layer.querySelector('.collision-hands');hands.style.left=(base+g.size-22)+'px';hands.style.top=(g.y+g.size*.25)+'px';
- setTimeout(()=>{if(activePalmMotion===motion)clearPalmMotion();host.classList.remove('colliding');finish();},reduced?20:640);
+ setTimeout(()=>{if(activePalmMotion===motion)clearPalmMotion();host.classList.remove('colliding','swipe-collision');finish();},reduced?20:640);
 }
 function openNotification(id){const n=data.notifications.find(n=>n.id===id);if(!n)return;if(!findComment(n.commentId)){navigate('note');showToast('原评论已删除');return;}navigate('note',{target:n.commentId});}
 function openSheet(title,body,half=false){closeEditor();const root=document.getElementById('editor-root');root.innerHTML=`<div class="composer-overlay"><section class="composer palm-sheet ${half?'comment-actions-sheet':''}" role="dialog" aria-modal="true" aria-label="${title}">${half?'<div class="sheet-handle" aria-hidden="true"></div>':`<div class="composer-head"><span>${title}</span><button id="close-sheet" class="close">关闭</button></div>`}${body}</section></div>`;const close=document.getElementById('close-sheet');if(close)close.onclick=closeEditor;root.querySelector('.composer-overlay').onclick=e=>{if(e.target.classList.contains('composer-overlay'))closeEditor();};root.onkeydown=e=>{if(e.key==='Escape')closeEditor();if(e.key==='Tab'){const nodes=[...root.querySelectorAll('button:not(:disabled),input:not(:disabled)')];if(e.shiftKey&&document.activeElement===nodes[0]){e.preventDefault();nodes.at(-1).focus();}else if(!e.shiftKey&&document.activeElement===nodes.at(-1)){e.preventDefault();nodes[0].focus();}}};root.querySelector('button')?.focus();}

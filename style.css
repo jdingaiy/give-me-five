@@ -38,9 +38,9 @@
 @media(prefers-reduced-motion:reduce){.comment-swipe-surface,.setting-switch:after{transition:none}.palm-motion-layer *{animation:none!important}.palm-motion-layer{display:none}}
 
 /* Collision and return share one timeline; the reader never passes the original avatar slot. */
-.colliding .comment-swipe-surface{animation:comment-spring-home .64s both cubic-bezier(.22,.7,.28,1)}
+.colliding.swipe-collision .comment-swipe-surface{animation:comment-spring-home .64s both cubic-bezier(.22,.7,.28,1)}
 @keyframes comment-spring-home{0%,43%{transform:translateX(var(--swipe-distance))}76%{transform:translateX(-5px)}88%{transform:translateX(2px)}100%{transform:translateX(0)}}
-@media(prefers-reduced-motion:reduce){.colliding .comment-swipe-surface{animation:none}}
+@media(prefers-reduced-motion:reduce){.colliding.swipe-collision .comment-swipe-surface{animation:none}}
 
 /* Only identity and content move. Metadata, controls and the palm status stay anchored. */
 .comment-fixed-meta{margin-left:51px}.reply .comment-fixed-meta{margin-left:32px}
