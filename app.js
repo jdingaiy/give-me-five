@@ -72,7 +72,7 @@ function goBack(){if(history.state?.prototype)history.back();else navigate('mess
 window.addEventListener('popstate',()=>{recordScroll();closeEditor();page=readRoute();if(page.peer)chatPeer=page.peer;render();});
 function render(options={}){clearPalmMotion();app.innerHTML=({note:renderNote,messages:renderMessages,likes:()=>renderNotifications('like'),comments:()=>renderNotifications('reply'),chat:renderChat}[page.name]||renderNote)();bindApp();document.querySelectorAll('[data-jump]').forEach(b=>{b.classList.toggle('selected',b.dataset.jump===(page.name==='note'?'note':'messages'));});const s=app.querySelector('.scroll');if(s){s.scrollTop=options.scroll??scrollPositions[routeKey()]??0;if(page.name==='chat')s.scrollTop=s.scrollHeight;}if(options.target){const c=findComment(options.target);if(c?.parent&&!expanded.has(c.parent)){expanded.add(c.parent);render({target:options.target});return;}const target=document.getElementById(`comment-${options.target}`)||document.getElementById('comments');target?.scrollIntoView({block:'center',behavior:'instant'});if(target?.id.startsWith('comment-')){target.classList.add('target-comment');}}}
 function renderNote(){const liked=data.noteLikes.includes(role),saved=data.noteSaves.includes(role),followed=data.follows.includes(role);return `<header class="topbar"><button class="back" data-action="back" aria-label="返回消息">${icon('back',24)}</button><div class="note-author">${avatar('cheng','top')}<span>阿橙</span></div><button class="follow ${followed?'followed':''}" data-action="follow">${followed?'已关注':'关注'}</button><button data-action="share" aria-label="分享">${icon('share',26)}</button></header><div class="scroll" id="note-scroll"><div class="note-photo-wrap"><img class="note-photo" src="${NOTE.image}" alt="室内攀岩馆的新手线路、彩色岩点与休息区域"></div><article class="note-body"><h1>${NOTE.title}</h1><p>${esc(NOTE.text).replaceAll('\n','<br>')}</p><div class="tags">${NOTE.tags}</div><div class="search-chip">${icon('search',16)}<span>猜你想搜&nbsp; 攀岩新手入门</span></div><div class="note-meta"><span>昨天 18:30 上海</span><button class="dislike" data-action="unavailable">${icon('neutral',14)}不喜欢</button></div></article><section class="comments" id="comments"><div class="comment-count">共 ${visibleComments().length} 条评论 ${icon('sort',15)}</div><div class="inline-input">${avatar(role)}<button data-action="compose"><span>有话要说，快来评论</span>${icon('mic',18)}${icon('image',18)}</button></div>${visibleComments().filter(c=>!c.parent).map(renderComment).join('')}</section></div><footer class="note-footer"><button class="write-trigger" data-action="compose">${icon('pen',17)}说点什么...</button><button class="stat-btn ${liked?'active':''}" data-action="note-like" aria-label="${liked?'取消赞':'点赞笔记'}" aria-pressed="${liked}">${icon('heart',27,liked)}${128+data.noteLikes.length}</button><button class="stat-btn ${saved?'active saved':''}" data-action="note-save" aria-label="${saved?'取消收藏':'收藏笔记'}" aria-pressed="${saved}">${icon('star',26,saved)}${36+data.noteSaves.length}</button><button class="stat-btn" data-action="to-comments" aria-label="查看评论">${icon('chat',27)}${visibleComments().length}</button></footer>`;}
-function commentSurface(c){return `<div class="comment-swipe" data-swipe-comment="${c.id}"><div class="swipe-reveal" aria-hidden="true">${avatar(role)}<span>右滑击掌</span></div><div class="comment-swipe-surface">${avatar(c.author,c.parent?'small':'')}<div class="comment-main">${commentContent(c)}</div></div><div class="comment-fixed-meta">${commentInteractions(c)}${c.pinned?'<span class="pinned">置顶评论</span>':''}</div></div>`;}
+function commentSurface(c){return `<div class="comment-swipe" data-swipe-comment="${c.id}"><div class="swipe-reveal" aria-hidden="true">${avatar(role)}<span></span></div><div class="comment-swipe-surface">${avatar(c.author,c.parent?'small':'')}<div class="comment-main">${commentContent(c)}</div></div><div class="comment-fixed-meta">${commentInteractions(c)}${c.pinned?'<span class="pinned">置顶评论</span>':''}</div></div>`;}
 function renderComment(c){const replies=visibleComments().filter(r=>r.parent===c.id),showAll=expanded.has(c.id),visible=showAll?replies:replies.slice(0,2);return `<article class="comment" id="comment-${c.id}">${commentSurface(c)}<div class="comment-replies">${visible.map(r=>`<div class="reply" id="comment-${r.id}">${commentSurface(r)}</div>`).join('')}${replies.length>2?`<button class="expand-replies" data-action="expand" data-id="${c.id}">${showAll?'收起回复':`展开 ${replies.length} 条回复`}</button>`:''}</div></article>`;}
 function commentContent(c){const liked=c.likedBy.includes(role),to=c.replyTo&&findComment(c.replyTo);return `<div class="comment-name">${PEOPLE[c.author].name}${c.author==='cheng'?'<span class="author-badge">作者</span>':''}</div><div class="comment-text" data-comment-menu="${c.id}" tabindex="0" aria-label="${PEOPLE[c.author].name}的评论，长按打开操作">${to&&to.id!==c.parent?`<span class="reply-person">回复 ${PEOPLE[to.author].name}：</span>`:''}${esc(c.text)}</div>`;}
 function commentInteractions(c){const liked=c.likedBy.includes(role);return `<div class="comment-meta"><span>${esc(c.time)} ${esc(c.place)}</span><button class="reply-action" data-action="reply" data-id="${c.id}">回复</button><button class="comment-likes ${liked?'active':''}" data-action="comment-like" data-id="${c.id}" aria-label="${liked?'取消赞':'赞'}${PEOPLE[c.author].name}的评论" aria-pressed="${liked}">${icon('heart',18,liked)}${c.baseLikes+c.likedBy.length||''}</button>${c.author!==role?`<button class="reaction-icon" data-action="unavailable" aria-label="不喜欢这条评论">${icon('neutral',17)}</button>`:''}</div>${c.palmNotified?.length&&c.author===role?'<span class="palm-notified-state">已通知击掌的人</span>':''}${c.palm?renderPalm(c):''}`;}
@@ -171,8 +171,8 @@ function palmGeometry(host,dx=0){
  return {x:(rect.width?rect.left:base.left+dx)-phone.left,y:(rect.width?rect.top:base.top)-phone.top,size:rect.width||(source.classList.contains('small')?24:39)};
 }
 function createPalmMotion(host){
- clearPalmMotion();const layer=document.createElement('div');layer.className='palm-motion-layer';layer.setAttribute('aria-hidden','true');layer.innerHTML='<div class="palm-avatar-unit unit-b">'+avatar(role,'collision-b')+'</div>'+'<span class="palm-drag-prompt palm-enter-prompt">右滑击掌</span><span class="palm-drag-prompt palm-release-prompt" hidden>松手击掌</span>';document.querySelector('.phone').append(layer);
- activePalmMotion={host,layer,b:layer.querySelector('.unit-b'),prompt:layer.querySelector('.palm-enter-prompt'),releasePrompt:layer.querySelector('.palm-release-prompt')};return activePalmMotion;
+ clearPalmMotion();const layer=document.createElement('div');layer.className='palm-motion-layer';layer.setAttribute('aria-hidden','true');layer.innerHTML='<div class="palm-avatar-unit unit-b">'+avatar(role,'collision-b')+'</div>'+'<span class="palm-drag-prompt palm-release-prompt" hidden>松手击掌</span>';document.querySelector('.phone').append(layer);
+ activePalmMotion={host,layer,b:layer.querySelector('.unit-b'),releasePrompt:layer.querySelector('.palm-release-prompt')};return activePalmMotion;
 }
 function updatePalmDrag(host,motion,dx){
  const g=palmGeometry(host,dx),base=g.x-dx,entry=g.size+21,travel=entry*Math.min(1,dx/PALM_SWIPE_THRESHOLD);
@@ -180,17 +180,16 @@ function updatePalmDrag(host,motion,dx){
  const progress=Math.min(1,dx/PALM_SWIPE_THRESHOLD),settled=dx>=PALM_SWIPE_THRESHOLD;
  motion.ready=settled;
  b.style.filter=`blur(${(4*(1-progress)).toFixed(2)}px)`;
- const prompt=motion.prompt,release=motion.releasePrompt;
- const position=motion.promptPosition??={enterX:Math.max(24,base+g.size/2),releaseX:base+g.size+8,y:g.y+g.size/2};
- // Wait for space beside the moving author avatar; both prompts retain their own anchors.
- prompt.hidden=settled||g.x<position.enterX+(prompt.offsetWidth||44)/2+8;release.hidden=!settled;
- prompt.style.left=position.enterX+'px';prompt.style.top=position.y+'px';prompt.dataset.phase='entering';
+ const release=motion.releasePrompt;
+ const position=motion.promptPosition??={releaseX:base+g.size+8,y:g.y+g.size/2};
+ // The release prompt keeps a fixed anchor beside the fully revealed avatar.
+ release.hidden=!settled;
  release.style.left=position.releaseX+'px';release.style.top=position.y+'px';release.dataset.phase='settled';
 
 
 }
 function retreatPalmMotion(host,motion){
- if(!motion)return;motion.prompt.hidden=true;motion.releasePrompt.hidden=true;const g=motion.g||palmGeometry(host);motion.b.style.transition='transform .28s cubic-bezier(.2,.8,.2,1)';motion.b.style.transform=`translateX(${-g.size-21}px)`;
+ if(!motion)return;motion.releasePrompt.hidden=true;const g=motion.g||palmGeometry(host);motion.b.style.transition='transform .28s cubic-bezier(.2,.8,.2,1)';motion.b.style.transform=`translateX(${-g.size-21}px)`;
  setTimeout(()=>{if(activePalmMotion===motion)clearPalmMotion();},290);
 }
 function animatePalmCollision(id,finish=()=>{},distance=0,motion=null){
@@ -199,7 +198,7 @@ function animatePalmCollision(id,finish=()=>{},distance=0,motion=null){
  motion??=createPalmMotion(host);const g=palmGeometry(host,distance),swiped=distance>0;
  const base=motion.base??g.x-distance,bstart=motion.bx??base-g.size-21;
  const bhit=swiped?base+2:Math.max(0,base-g.size+2),ahit=bhit+g.size-2;
- motion.prompt.hidden=true;motion.releasePrompt.hidden=true;motion.b.style.filter='';
+ motion.releasePrompt.hidden=true;motion.b.style.filter='';
  const layer=motion.layer;layer.classList.add('palm-collision');host.classList.add('colliding');host.classList.toggle('swipe-collision',swiped);
  for(const [key,value] of Object.entries({'b-start':bstart,'a-start':g.x,'b-hit':bhit,'a-hit':ahit,'a-rest':base,'b-exit':base-g.size-21}))layer.style.setProperty('--'+key,value+'px');
  host.style.setProperty('--swipe-distance',distance+'px');layer.style.setProperty('--avatar-size',g.size+'px');
@@ -236,7 +235,7 @@ function bindCommentMenus(){
    dragging=true;app.querySelectorAll('.palm-swipe-hint').forEach(hint=>hint.remove());palmHintObserver?.disconnect();palmSwipeHintObserver?.disconnect();host.classList.add('dragging');motion=createPalmMotion(host);host.setPointerCapture?.(e.pointerId);
   }
   e.preventDefault();dx=Math.max(0,Math.min(136,x));surface.style.transform=`translateX(${dx}px)`;
-  updatePalmDrag(host,motion,dx);reveal.style.opacity='0';host.classList.toggle('swipe-ready',motion.ready);label.textContent=motion.ready?'松手击掌':'右滑击掌';
+  updatePalmDrag(host,motion,dx);reveal.style.opacity='0';host.classList.toggle('swipe-ready',motion.ready);label.textContent=motion.ready?'松手击掌':'';
  },{passive:false});
  host.addEventListener('pointerup',e=>{
   if(!start||e.pointerId!==start.pointer)return;
