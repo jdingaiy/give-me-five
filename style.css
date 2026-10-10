@@ -48,3 +48,6 @@
 
 /* Two exclusive prompts sit on the avatar centerline, with no backing surface. */
 .palm-drag-prompt{position:absolute;z-index:6;transform:translate(-50%,-50%);font-size:11px;line-height:18px;white-space:nowrap;color:#666;padding:0;background:none;text-shadow:none;pointer-events:none}.palm-release-prompt{transform:translateY(-50%)}.palm-drag-prompt[hidden]{display:none}.palm-motion-layer:not(.palm-collision)>.collision-b{will-change:transform,filter}
+
+/* Palm emoji taps have no button backing in any participation state. */
+.palm-mark.palm-join,.palm-mark.palm-cancel,.palm-mark.palm-join:hover,.palm-mark.palm-cancel:hover,.palm-mark.palm-join:active,.palm-mark.palm-cancel:active{background:transparent;border-radius:0;padding:0;box-shadow:none}
