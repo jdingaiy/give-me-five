@@ -112,3 +112,5 @@
 @keyframes composer-backdrop-in{from{background-color:#0000}to{background-color:#0004}}
 @keyframes composer-backdrop-out{from{background-color:#0004}to{background-color:#0000}}
 @media(prefers-reduced-motion:reduce){.composer-keyboard-panel,.keyboard-composer-overlay,.keyboard-composer-overlay.is-closing,.keyboard-composer-overlay.is-closing .composer-keyboard-panel{animation:none}}
+
+.participants-sheet .palm-person>span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.participants-sheet .participant-private{flex-shrink:0;background:#fff;font-size:12px;padding:7px 11px;border:1px solid #e6e6e8;white-space:nowrap}.participants-sheet .participant-private:disabled{opacity:.4}
