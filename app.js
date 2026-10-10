@@ -59,7 +59,7 @@ function recordScroll(){const s=app.querySelector('.scroll');if(s)scrollPosition
 function navigate(name,options={}){recordScroll();closeEditor();if(name==='chat')chatPeer=options.peer|| (role==='lin'?'qing':'lin');page={name,peer:name==='chat'?chatPeer:undefined};history.pushState({prototype:true},'',`#${name}${name==='chat'?'/'+chatPeer:''}`);render({target:options.target,scroll:options.scroll});}
 function goBack(){if(history.state?.prototype)history.back();else navigate('messages');}
 window.addEventListener('popstate',()=>{recordScroll();closeEditor();page=readRoute();if(page.peer)chatPeer=page.peer;render();});
-function render(options={}){document.querySelectorAll('.palm-motion-layer').forEach(el=>el.remove());app.innerHTML=({note:renderNote,messages:renderMessages,likes:()=>renderNotifications('like'),comments:()=>renderNotifications('reply'),chat:renderChat}[page.name]||renderNote)();bindApp();document.querySelectorAll('[data-jump]').forEach(b=>{b.classList.toggle('selected',b.dataset.jump===(page.name==='note'?'note':'messages'));});const s=app.querySelector('.scroll');if(s){s.scrollTop=options.scroll??scrollPositions[routeKey()]??0;if(page.name==='chat')s.scrollTop=s.scrollHeight;}if(options.target){const c=findComment(options.target);if(c?.parent&&!expanded.has(c.parent)){expanded.add(c.parent);render({target:options.target});return;}const target=document.getElementById(`comment-${options.target}`)||document.getElementById('comments');target?.scrollIntoView({block:'center',behavior:'instant'});if(target?.id.startsWith('comment-')){target.classList.add('target-comment');}}}
+function render(options={}){clearPalmMotion();app.innerHTML=({note:renderNote,messages:renderMessages,likes:()=>renderNotifications('like'),comments:()=>renderNotifications('reply'),chat:renderChat}[page.name]||renderNote)();bindApp();document.querySelectorAll('[data-jump]').forEach(b=>{b.classList.toggle('selected',b.dataset.jump===(page.name==='note'?'note':'messages'));});const s=app.querySelector('.scroll');if(s){s.scrollTop=options.scroll??scrollPositions[routeKey()]??0;if(page.name==='chat')s.scrollTop=s.scrollHeight;}if(options.target){const c=findComment(options.target);if(c?.parent&&!expanded.has(c.parent)){expanded.add(c.parent);render({target:options.target});return;}const target=document.getElementById(`comment-${options.target}`)||document.getElementById('comments');target?.scrollIntoView({block:'center',behavior:'instant'});if(target?.id.startsWith('comment-')){target.classList.add('target-comment');}}}
 function renderNote(){const liked=data.noteLikes.includes(role),saved=data.noteSaves.includes(role),followed=data.follows.includes(role);return `<header class="topbar"><button class="back" data-action="back" aria-label="返回消息">${icon('back',24)}</button><div class="note-author">${avatar('cheng','top')}<span>阿橙</span></div><button class="follow ${followed?'followed':''}" data-action="follow">${followed?'已关注':'关注'}</button><button data-action="share" aria-label="分享">${icon('share',26)}</button></header><div class="scroll" id="note-scroll"><div class="note-photo-wrap"><img class="note-photo" src="${NOTE.image}" alt="阿橙的新相机，银黑色相机放在咖啡店的木桌上"></div><article class="note-body"><h1>${NOTE.title}</h1><p>${esc(NOTE.text).replaceAll('\n','<br>')}</p><div class="tags">${NOTE.tags}</div><div class="search-chip">${icon('search',16)}<span>猜你想搜&nbsp; 随身相机</span></div><div class="note-meta"><span>昨天 18:30 上海</span><button class="dislike" data-action="unavailable">${icon('neutral',14)}不喜欢</button></div></article><section class="comments" id="comments"><div class="comment-count">共 ${visibleComments().length} 条评论 ${icon('sort',15)}</div><div class="inline-input">${avatar(role)}<button data-action="compose"><span>有话要说，快来评论</span>${icon('mic',18)}${icon('image',18)}</button></div>${visibleComments().filter(c=>!c.parent).map(renderComment).join('')}</section></div><footer class="note-footer"><button class="write-trigger" data-action="compose">${icon('pen',17)}说点什么...</button><button class="stat-btn ${liked?'active':''}" data-action="note-like" aria-label="${liked?'取消赞':'点赞笔记'}" aria-pressed="${liked}">${icon('heart',27,liked)}${128+data.noteLikes.length}</button><button class="stat-btn ${saved?'active saved':''}" data-action="note-save" aria-label="${saved?'取消收藏':'收藏笔记'}" aria-pressed="${saved}">${icon('star',26,saved)}${36+data.noteSaves.length}</button><button class="stat-btn" data-action="to-comments" aria-label="查看评论">${icon('chat',27)}${visibleComments().length}</button></footer>`;}
 function commentSurface(c){return `<div class="comment-swipe" data-swipe-comment="${c.id}"><div class="swipe-reveal" aria-hidden="true">${avatar(role)}<span>右滑击掌</span></div><div class="comment-swipe-surface">${avatar(c.author,c.parent?'small':'')}<div class="comment-main">${commentContent(c)}${c.pinned?'<span class="pinned">置顶评论</span>':''}</div></div></div>`;}
 function renderComment(c){const replies=visibleComments().filter(r=>r.parent===c.id),showAll=expanded.has(c.id),visible=showAll?replies:replies.slice(0,2);return `<article class="comment" id="comment-${c.id}">${commentSurface(c)}<div class="comment-replies">${visible.map(r=>`<div class="reply" id="comment-${r.id}">${commentSurface(r)}</div>`).join('')}${replies.length>2?`<button class="expand-replies" data-action="expand" data-id="${c.id}">${showAll?'收起回复':`展开 ${replies.length} 条回复`}</button>`:''}</div></article>`;}
@@ -85,12 +85,12 @@ function openEditor(id=null,respond=false,editing=false){
  const target=findComment(id);if(id&&!target){showToast('原评论已删除');return;}
  if(editing&&target?.author!==role)return;
  closeEditor();replyTarget=id;const draftKey=role+':'+(editing?'edit:':respond?'response:':'')+(id||'new'),root=document.getElementById('editor-root');
- const responding=respond&&target?.palm&&target.author===role,canSetPalm=!editing&&!responding;
+ const responding=respond&&target?.palm&&target.author===role;
  const count=responding?target.palm.participants.length:0,canNotify=responding&&count>0&&target.palm.status==='open';
- root.innerHTML=`<div class="composer-overlay"><form class="composer comment-composer" role="dialog" aria-modal="true" aria-label="${editing?'编辑评论':responding?'回应大家':target?'回复评论':'发表评论'}"><textarea id="comment-text" aria-label="${editing?'评论内容':target?'回复内容':'评论内容'}" maxlength="2000" placeholder="${target&&!editing?'回复 @'+PEOPLE[target.author].name:'说点什么...'}">${esc(drafts.get(draftKey)??(editing?target.text:responding?'样片来啦！阴天肤色挺自然，已经补在笔记里了。':''))}</textarea><div class="composer-footer"><button type="button" id="comment-voice" aria-label="语音评论">${icon('mic',24)}</button><button type="button" id="comment-image" aria-label="添加图片">${icon('image',24)}</button><button type="button" id="comment-mention" class="mention-icon" aria-label="提及用户">@</button><button type="button" id="comment-emoji" aria-label="评论表情">${icon('smile',25)}</button><button type="button" id="comment-plus" aria-label="更多评论选项">${icon('plus',24)}</button>${canSetPalm?`<label class="palm-toolbar-toggle" title="击掌评论"><input id="leave-palm" type="checkbox" role="switch" aria-label="击掌评论"><span aria-hidden="true">${handIcon()}</span></label>`:''}<span class="counter" id="comment-counter" hidden></span><button class="send" id="send-comment" disabled>${editing?'保存':'发送'}</button></div>${responding?`<label class="palm-reminder"><input id="notify-palm" type="checkbox" ${canNotify?'checked':'disabled'}>提醒${count}位参与者</label>${target.palm.status!=='open'?'<p class="palm-help">击掌已关闭，不再发送群体提醒。</p>':!count?'<p class="palm-help">暂无击掌，先发布公开回复。</p>':''}`:''}<div class="composer-emoji-strip">${['😂','😭','😡','🥰','😘','🥳','😤','🥺'].map(emoji=>`<button type="button" data-comment-emoji="${emoji}" aria-label="添加${emoji}">${emoji}</button>`).join('')}</div></form></div>`;
+ root.innerHTML=`<div class="composer-overlay"><form class="composer comment-composer" role="dialog" aria-modal="true" aria-label="${editing?'编辑评论':responding?'回应大家':target?'回复评论':'发表评论'}"><textarea id="comment-text" aria-label="${editing?'评论内容':target?'回复内容':'评论内容'}" maxlength="2000" placeholder="${target&&!editing?'回复 @'+PEOPLE[target.author].name:'说点什么...'}">${esc(drafts.get(draftKey)??(editing?target.text:responding?'样片来啦！阴天肤色挺自然，已经补在笔记里了。':''))}</textarea><div class="composer-footer"><button type="button" id="comment-voice" aria-label="语音评论">${icon('mic',24)}</button><button type="button" id="comment-image" aria-label="添加图片">${icon('image',24)}</button><button type="button" id="comment-mention" class="mention-icon" aria-label="提及用户">@</button><button type="button" id="comment-emoji" aria-label="评论表情">${icon('smile',25)}</button><button type="button" id="comment-plus" aria-label="更多评论选项">${icon('plus',24)}</button>${!target?`<label class="palm-toolbar-toggle" title="击掌评论"><input id="leave-palm" type="checkbox" role="switch" aria-label="击掌评论"><span aria-hidden="true">${menuGlyph('hand',24)}</span></label>`:''}<span class="counter" id="comment-counter" hidden></span><button class="send" id="send-comment" disabled>${editing?'保存':'发送'}</button></div>${!target?'<p class="palm-help" id="palm-help" hidden>击掌评论：别人可右滑击掌，有进展时可提醒参与者。</p>':''}${responding?`<label class="palm-reminder"><input id="notify-palm" type="checkbox" ${canNotify?'checked':'disabled'}>提醒${count}位参与者</label>${target.palm.status!=='open'?'<p class="palm-help">击掌已关闭，不再发送群体提醒。</p>':!count?'<p class="palm-help">暂无击掌，先发布公开回复。</p>':''}`:''}<div class="composer-emoji-strip">${['😂','😭','😡','🥰','😘','🥳','😤','🥺'].map(emoji=>`<button type="button" data-comment-emoji="${emoji}" aria-label="添加${emoji}">${emoji}</button>`).join('')}</div></form></div>`;
  const text=document.getElementById('comment-text'),toggle=document.getElementById('leave-palm');
  const update=()=>{drafts.set(draftKey,text.value);document.getElementById('send-comment').disabled=!text.value.trim();document.getElementById('comment-counter').textContent=`${text.value.length} / 2000`;};
- if(toggle)toggle.onchange=()=>{update();};
+ if(toggle)toggle.onchange=()=>{document.getElementById('palm-help').hidden=!toggle.checked;if(toggle.checked&&!text.value.trim())text.value='周末去试拍，回来补样片，想看的来击掌～';update();};
  text.addEventListener('input',update);root.querySelector('form').addEventListener('submit',e=>{e.preventDefault();const success=editing?editComment(id,text.value):publishComment(text.value,{leavePalm:!!toggle?.checked,responding,notify:!!document.getElementById('notify-palm')?.checked});if(success)drafts.delete(draftKey);});
  root.querySelector('.composer-overlay').addEventListener('click',e=>{if(e.target.classList.contains('composer-overlay'))closeEditor();});
  const insert=value=>{const start=text.selectionStart,end=text.selectionEnd;text.setRangeText(value,start,end,'end');update();text.focus();};
@@ -105,81 +105,85 @@ function publishComment(text,options={}){
  const value=text.trim();if(!value||value.length>2000)return false;
  const target=findComment(replyTarget);if(replyTarget&&!target){showToast('原评论已删除');return false;}
  const c={id:newId('c'),author:role,text:value,time:'刚刚',place:role==='lin'?'浙江':'上海',baseLikes:0,likedBy:[]};
- if(options.leavePalm)c.palm={status:'open',participants:[]};
  if(target){c.parent=target.parent||target.id;c.replyTo=target.id;expanded.add(c.parent);
  if(options.responding&&target.palm&&target.author===role){c.palmResponse=true;
  // Snapshot only current participants: cancellation and later joins never backfill notifications.
  if(options.notify&&target.palm.status==='open')for(const person of new Set(target.palm.participants)){if(person!==role)data.notifications.unshift({id:newId('n'),kind:'palm-response',actor:role,recipient:person,commentId:c.id,refId:target.id,time:'刚刚'});}
  }else if(target.author!==role)data.notifications.unshift({id:newId('n'),kind:'reply',actor:role,recipient:target.author,commentId:c.id,refId:target.id,time:'刚刚'});
- }else{data.notifications.unshift({id:newId('n'),kind:'reply',actor:role,recipient:'cheng',commentId:c.id,time:'刚刚'});}
+ }else{if(options.leavePalm)c.palm={status:'open',participants:[],history:[]};data.notifications.unshift({id:newId('n'),kind:'reply',actor:role,recipient:'cheng',commentId:c.id,time:'刚刚'});}
  data.comments.push(c);drafts.delete(role+':'+(replyTarget||'new'));save();closeEditor();if(page.name!=='note')navigate('note',{target:c.id});else{recordScroll();render({target:c.id});}showToast(target?'回复已发布':'评论已发布');return true;
 }
 
-function handIcon(size=22){return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 12V5a1.5 1.5 0 0 1 3 0v6-8a1.5 1.5 0 0 1 3 0v8-6a1.5 1.5 0 0 1 3 0v7-4a1.5 1.5 0 0 1 3 0v7c0 5-3 7-7 7-3 0-5-2-7-5l-3-4a1.5 1.5 0 0 1 2-2l3 3"/></svg>`;}
+function palmHistory(c){return [...new Set([...(c.palm?.history||[]),...(c.palm?.historyParticipants||[]),...(c.palm?.participants||[])])];}
 function renderPalm(c){
- const p=c.palm,closed=p.status!=='open',people=closed?(p.historyParticipants||p.participants):p.participants,count=new Set(people).size,own=c.author===role,joined=p.participants.includes(role);
+ const p=c.palm,own=c.author===role,joined=p.participants.includes(role),closed=p.status!=='open';
+ const people=closed?palmHistory(c):p.participants,count=people.length;
  if(closed&&!count)return '';
- const stack=count?`<span class="palm-avatar-stack" aria-hidden="true">${[...new Set(people)].slice(0,3).map(person=>avatar(person,'palm-avatar')).join('')}</span>`:'';
- const label=closed?`${count}人曾击掌`:!own&&joined?`已击掌 · ${count}人`:count?`${count}人击掌`:'击掌评论';
- return `<div class="palm-row" id="palm-${c.id}"><span class="palm-mark" aria-hidden="true">${handIcon(14)}</span>${own?`<button class="palm-count" data-action="participants" data-id="${c.id}" ${count?'':'disabled'}>${stack}<span>${label}</span></button>${!closed&&count?`<button class="palm-respond" data-action="respond" data-id="${c.id}">回应大家</button>`:''}`:joined?`<button class="palm-status joined" data-action="palm" data-id="${c.id}" aria-label="取消击掌">${stack}<span>${label}</span></button>`:`<span class="palm-status">${stack}<span>${label}</span></span>`}</div>`;
+ const stack=count?`<span class="palm-avatar-stack" aria-hidden="true">${people.slice(0,3).map(person=>avatar(person,'palm-avatar')).join('')}</span>`:'';
+ const label=closed?`${count}人曾击掌`:count?`${count}人击掌`:'击掌评论';
+ return `<div class="palm-row" id="palm-${c.id}"><span class="palm-mark" aria-hidden="true">${menuGlyph('hand',15)}</span>${own?`<button class="palm-count" data-action="participants" data-id="${c.id}" ${count?'':'disabled'}>${stack}<span>${label}</span></button><button class="palm-respond" data-action="respond" data-id="${c.id}">回应大家</button>`:`<span class="palm-status ${joined?'joined':''}">${stack}${joined?`<button class="palm-cancel" data-action="palm" data-id="${c.id}" aria-label="取消击掌">已击掌</button><span> · ${count}人${closed?'曾击掌':''}</span>`:`<span>${label}</span>`}</span>`}</div>`;
 }
 function canJoinPalm(c){return !!c?.palm&&c.author!==role&&c.palm.status==='open'&&!c.palm.participants.includes(role);}
 function togglePalm(id,options={}){
  const c=findComment(id);if(!c?.palm||c.author===role)return false;
  const joined=c.palm.participants.includes(role);
  if(options.joinOnly&&joined||!joined&&c.palm.status!=='open')return false;
- // Persist the entire change before showing success; restore both state and notices on failure.
- const before=structuredClone(data);
- c.palm.historyParticipants=[...new Set([...(c.palm.historyParticipants||[]),...c.palm.participants,...(!joined?[role]:[])])];
- c.palm.participants=[...new Set(c.palm.participants)];toggleList(c.palm.participants,role);
- let n=data.notifications.find(n=>n.kind==='palm'&&n.commentId===id);
- if(!joined){if(!n){n={id:newId('n'),kind:'palm',recipient:c.author,commentId:id};data.notifications.unshift(n);}n.actors=[...new Set([...(n.actors||[]),role])];n.actor=role;n.time='刚刚';}
- // Cancellation changes current membership only; delivered notifications remain intact.
+ const before=structuredClone(data);c.palm.history=palmHistory(c);
+ toggleList(c.palm.participants,role);
+ if(!joined){
+  c.palm.history=[...new Set([...c.palm.history,role])];
+  let n=data.notifications.find(n=>n.kind==='palm'&&n.commentId===id);
+  if(!n){n={id:newId('n'),kind:'palm',recipient:c.author,commentId:id,actors:[]};data.notifications.unshift(n);}
+  n.actors=[...new Set([...(n.actors||[n.actor]).filter(Boolean),role])];n.actor=role;n.time='刚刚';
+ }
+ // Cancellation keeps previously delivered notifications and all conversations intact.
  try{localStorage.setItem(STORAGE,JSON.stringify(data));}catch{data=before;showToast('击掌未提交成功，请重试');return false;}
  if(!options.deferRender){recordScroll();render();if(!joined)animatePalmCollision(id);}
  showToast(joined?'已取消击掌，不再接收后续提醒':'已击掌，有进展时会收到提醒');return true;
 }
-const reducedMotion=()=>window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-function createPalmMotion(host){
- const phone=document.querySelector('.phone'),frame=phone.getBoundingClientRect(),a=host.querySelector('.comment-swipe-surface>.avatar').getBoundingClientRect();
- const layer=document.createElement('div');layer.className='palm-motion-layer';layer.setAttribute('aria-hidden','true');
- layer.innerHTML=avatar(role,'motion-b')+'<span class="motion-drag-hint">右滑击掌</span>';phone.append(layer);
- const b=layer.firstElementChild;const x=a.left-frame.left-phone.clientLeft-56,y=a.top-frame.top-phone.clientTop;
- b.style.cssText=`left:${x}px;top:${y}px;width:${a.width}px;height:${a.height}px;transform:translateX(0px)`;
- const hint=layer.querySelector('.motion-drag-hint');hint.style.cssText=`left:${x}px;top:${y+a.height+6}px`;return {layer,b,hint,x,y,size:a.width};
+let activePalmMotion;
+function clearPalmMotion(){if(activePalmMotion){activePalmMotion.layer.remove();activePalmMotion.host?.classList.remove('colliding');activePalmMotion=null;}}
+function palmGeometry(host,dx=0){
+ const phone=document.querySelector('.phone').getBoundingClientRect(),source=host.querySelector('.comment-swipe-surface>.avatar'),rect=source.getBoundingClientRect(),base=host.getBoundingClientRect();
+ return {x:(rect.width?rect.left:base.left+dx)-phone.left,y:(rect.width?rect.top:base.top)-phone.top,size:rect.width||(source.classList.contains('small')?24:39)};
 }
-function animatePalmCollision(id,finish=()=>{},distance=112,motion=null){
- const host=app.querySelector(`[data-swipe-comment="${id}"]`),c=findComment(id);if(!host||!c){motion?.layer.remove();finish();return;}
- if(reducedMotion()){motion?.layer.remove();finish();return;}
- const surface=host.querySelector('.comment-swipe-surface');
- if(!motion){surface.style.transform=`translateX(${distance}px)`;motion=createPalmMotion(host);motion.x-=distance;motion.b.style.left=motion.x+'px';motion.b.style.transform=`translateX(${distance}px)`;}
- motion.hint.hidden=true;const {layer,b,x,y,size}=motion,phone=document.querySelector('.phone'),frame=phone.getBoundingClientRect(),source=surface.querySelector('.avatar'),rect=source.getBoundingClientRect();
- const ax=rect.left-frame.left-phone.clientLeft,ay=rect.top-frame.top-phone.clientTop;
- const a=source.cloneNode();a.className='avatar motion-a';a.style.cssText=`left:${ax}px;top:${ay}px;width:${size}px;height:${size}px`;layer.append(a);host.classList.add('colliding');
- const hit=ax-size+8-x,contact=ax+4;
- const hands=document.createElement('span');hands.className='motion-hands';hands.style.cssText=`left:${contact}px;top:${y+size*.22}px`;hands.innerHTML='<span>✋</span><span>🤚</span>';layer.append(hands);
- const timing={duration:720,fill:'forwards',easing:'ease-out'};
- b.animate([{transform:`translateX(${distance}px)`},{transform:`translateX(${hit}px) scale(1.06)`,offset:.32},{transform:`translateX(${hit-9}px) scale(.98)`,offset:.52},{transform:`translateX(${hit-5}px)`,offset:.66},{transform:'translateX(-56px)',opacity:0}],timing);
- a.animate([{transform:'translateX(0)'},{transform:'translateX(4px) scale(1.04)',offset:.32},{transform:'translateX(9px)',offset:.52},{transform:'translateX(0)',offset:.66},{transform:`translateX(${-distance}px)`}],timing);
- hands.animate([{opacity:0},{opacity:0,offset:.18},{opacity:1,offset:.29},{opacity:1,offset:.48},{opacity:0,offset:.7},{opacity:0}],timing);
- hands.children[0].animate([{transform:'translateX(-14px) rotate(-18deg)'},{transform:'translateX(5px) rotate(0)',offset:.32},{transform:'translateX(-3px) rotate(-8deg)',offset:.52},{transform:'translateX(-12px)'}],timing);
- hands.children[1].animate([{transform:'translateX(14px) rotate(18deg)'},{transform:'translateX(-5px) rotate(0)',offset:.32},{transform:'translateX(3px) rotate(8deg)',offset:.52},{transform:'translateX(12px)'}],timing);
- setTimeout(()=>{surface.style.transition='transform .24s ease-out';surface.style.transform='';},475);
- setTimeout(()=>{layer.remove();host.classList.remove('colliding');surface.style.transition='';finish();},730);
+function createPalmMotion(host){
+ clearPalmMotion();const layer=document.createElement('div');layer.className='palm-motion-layer';layer.setAttribute('aria-hidden','true');layer.innerHTML=avatar(role,'collision-b');document.querySelector('.phone').append(layer);
+ activePalmMotion={host,layer,b:layer.querySelector('img')};return activePalmMotion;
+}
+function updatePalmDrag(host,motion,dx){
+ const g=palmGeometry(host,dx),gap=g.size+21-Math.min(20,dx*.16);
+ motion.g=g;motion.bx=g.x-gap;const b=motion.b;b.style.left=(g.x-dx)+'px';b.style.top=g.y+'px';b.style.width=b.style.height=g.size+'px';b.style.transform=`translateX(${dx-gap}px)`;
+}
+function retreatPalmMotion(host,motion){
+ if(!motion)return;const g=motion.g||palmGeometry(host);motion.b.style.transition='transform .28s cubic-bezier(.2,.8,.2,1)';motion.b.style.transform=`translateX(${-g.size-21}px)`;
+ setTimeout(()=>{if(activePalmMotion===motion)clearPalmMotion();},290);
+}
+function animatePalmCollision(id,finish=()=>{},distance=0,motion=null){
+ const host=app.querySelector(`[data-swipe-comment="${id}"]`),c=findComment(id);if(!host||!c){finish();return;}
+ const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+ motion??=createPalmMotion(host);const g=palmGeometry(host,distance);
+ const bstart=motion.bx??g.x-g.size-21,bhit=g.x-g.size+6;
+ const layer=motion.layer;layer.classList.add('palm-collision');host.classList.add('colliding');
+ layer.style.setProperty('--b-start',bstart+'px');layer.style.setProperty('--a-start',g.x+'px');layer.style.setProperty('--b-hit',bhit+'px');layer.style.setProperty('--a-hit',(g.x+2)+'px');
+ const b=motion.b;b.style.left='0';b.style.top=g.y+'px';b.style.width=b.style.height=g.size+'px';b.style.transform='';b.classList.add('avatar-hit-b');
+ layer.insertAdjacentHTML('beforeend',`${avatar(c.author,'collision-a avatar-hit-a')}<span class="collision-hands"><span>✋</span><span>🤚</span></span>`);
+ const a=layer.querySelector('.collision-a');a.style.top=g.y+'px';a.style.width=a.style.height=g.size+'px';const hands=layer.querySelector('.collision-hands');hands.style.left=(g.x-18)+'px';hands.style.top=(g.y+g.size*.25)+'px';
+ setTimeout(()=>{if(activePalmMotion===motion)clearPalmMotion();host.classList.remove('colliding');finish();},reduced?20:640);
 }
 function openNotification(id){const n=data.notifications.find(n=>n.id===id);if(!n)return;if(!findComment(n.commentId)){navigate('note');showToast('原评论已删除');return;}navigate('note',{target:n.commentId});}
-function openSheet(title,body,half=false){closeEditor();const root=document.getElementById('editor-root');root.innerHTML=`<div class="composer-overlay"><section class="composer palm-sheet ${half?'comment-actions-sheet':''}" role="dialog" aria-modal="true" aria-label="${title}">${half?'<div class="sheet-handle" aria-hidden="true"></div>':`<div class="composer-head"><span>${title}</span><button id="close-sheet" class="close">关闭</button></div>`}${body}</section></div>`;const close=document.getElementById('close-sheet');if(close)close.onclick=closeEditor;root.querySelector('.composer-overlay').onclick=e=>{if(e.target.classList.contains('composer-overlay'))closeEditor();};root.onkeydown=e=>{if(e.key==='Escape')closeEditor();if(e.key==='Tab'){const nodes=[...root.querySelectorAll('button:not(:disabled)')];if(e.shiftKey&&document.activeElement===nodes[0]){e.preventDefault();nodes.at(-1).focus();}else if(!e.shiftKey&&document.activeElement===nodes.at(-1)){e.preventDefault();nodes[0].focus();}}};root.querySelector('button')?.focus();}
+function openSheet(title,body,half=false){closeEditor();const root=document.getElementById('editor-root');root.innerHTML=`<div class="composer-overlay"><section class="composer palm-sheet ${half?'comment-actions-sheet':''}" role="dialog" aria-modal="true" aria-label="${title}">${half?'<div class="sheet-handle" aria-hidden="true"></div>':`<div class="composer-head"><span>${title}</span><button id="close-sheet" class="close">关闭</button></div>`}${body}</section></div>`;const close=document.getElementById('close-sheet');if(close)close.onclick=closeEditor;root.querySelector('.composer-overlay').onclick=e=>{if(e.target.classList.contains('composer-overlay'))closeEditor();};root.onkeydown=e=>{if(e.key==='Escape')closeEditor();if(e.key==='Tab'){const nodes=[...root.querySelectorAll('button:not(:disabled),input:not(:disabled)')];if(e.shiftKey&&document.activeElement===nodes[0]){e.preventDefault();nodes.at(-1).focus();}else if(!e.shiftKey&&document.activeElement===nodes.at(-1)){e.preventDefault();nodes[0].focus();}}};root.querySelector('button')?.focus();}
 let palmHintObserver;
 function bindCommentMenus(){
  palmHintObserver?.disconnect();
  app.querySelectorAll('[data-swipe-comment]').forEach(host=>{
  const id=host.dataset.swipeComment,surface=host.querySelector('.comment-swipe-surface'),reveal=host.querySelector('.swipe-reveal'),label=reveal.querySelector('span');
- let timer,start,dragging=false,blocked=false,dx=0,suppressUntil=0,motion=null;
+ let timer,start,dragging=false,blocked=false,dx=0,suppressUntil=0,motion;
  const cancelHold=()=>{clearTimeout(timer);timer=null;};
- const reset=()=>{cancelHold();start=null;dragging=false;dx=0;host.classList.remove('dragging','swipe-ready');surface.style.transform='';reveal.style.opacity='';if(motion){const old=motion;motion=null;if(reducedMotion())old.layer.remove();else{old.b.style.transition='transform .28s ease-out';old.b.style.transform='translateX(0px)';old.hint.hidden=true;setTimeout(()=>old.layer.remove(),280);}};};
+ const reset=()=>{cancelHold();start=null;dragging=false;dx=0;host.classList.remove('dragging','swipe-ready');surface.style.transform='';reveal.style.opacity='';retreatPalmMotion(host,motion);motion=null;};
  const menu=()=>{reset();suppressUntil=Date.now()+700;openPalmMenu(id);};
  host.addEventListener('pointerdown',e=>{
-  if(e.button!==0||e.isPrimary===false||host.classList.contains('colliding')||e.target.closest('button,a,input,textarea,img'))return;
+  if(e.button!==0||e.isPrimary===false||(host.classList.contains('colliding')||activePalmMotion)||e.target.closest('button,a,input,textarea,img'))return;
   cancelHold();start={x:e.clientX,y:e.clientY,pointer:e.pointerId};dragging=false;blocked=false;dx=0;
   timer=setTimeout(()=>{if(host.isConnected){menu();}},500);
  });
@@ -190,10 +194,10 @@ function bindCommentMenus(){
   if(blocked)return;
   if(!dragging){if(Math.max(Math.abs(x),Math.abs(y))<10)return;
    if(x<=0||Math.abs(x)<Math.abs(y)*1.4||!canJoinPalm(findComment(id))){blocked=true;return;}
-   dragging=true;motion=createPalmMotion(host);host.classList.add('dragging');host.setPointerCapture?.(e.pointerId);
+   dragging=true;host.classList.add('dragging');motion=createPalmMotion(host);host.setPointerCapture?.(e.pointerId);
   }
   e.preventDefault();dx=Math.max(0,Math.min(136,x));surface.style.transform=`translateX(${dx}px)`;
-  if(motion){motion.b.style.transform=`translateX(${dx}px)`;motion.hint.style.transform=`translateX(${dx}px)`;motion.hint.textContent=dx>=88?'松手击掌':'右滑击掌';}host.classList.toggle('swipe-ready',dx>=88);label.textContent=dx>=88?'松手击掌':'右滑击掌';
+  updatePalmDrag(host,motion,dx);reveal.style.opacity=dx>=42?'1':'0';host.classList.toggle('swipe-ready',dx>=88);label.textContent=dx>=88?'松手击掌':'右滑击掌';
  },{passive:false});
  host.addEventListener('pointerup',e=>{
   if(!start||e.pointerId!==start.pointer)return;
@@ -201,8 +205,8 @@ function bindCommentMenus(){
   if(didDrag)suppressUntil=Date.now()+500;
   if(!submit){reset();return;}
   if(!togglePalm(id,{joinOnly:true,deferRender:true})){reset();return;}
-  host.querySelector('.palm-swipe-hint')?.remove();// Update the UI only after collision and return complete.
-  const currentRole=role,activeMotion=motion;motion=null;animatePalmCollision(id,()=>{reset();if(host.isConnected&&role===currentRole){recordScroll();render();}},distance,activeMotion);
+  host.querySelector('.palm-swipe-hint')?.remove();
+  const currentRole=role;animatePalmCollision(id,()=>{motion=null;reset();setTimeout(()=>{if(host.isConnected&&role===currentRole){recordScroll();render();}},280);},distance,motion);
  });
  host.addEventListener('pointercancel',reset);
  host.addEventListener('lostpointercapture',()=>{if(start)reset();});
@@ -220,31 +224,34 @@ function bindCommentMenus(){
  }
 }
 
-function openParticipants(id){const c=findComment(id);if(!c?.palm)return;const people=[...new Set(c.palm.status==='open'?c.palm.participants:(c.palm.historyParticipants||c.palm.participants))];openSheet(`${people.length}人${c.palm.status==='open'?'击掌':'曾击掌'}`,people.map(person=>`<div class="palm-person">${avatar(person)}<span>${PEOPLE[person].name}</span></div>`).join('')||'<div class="empty">暂无击掌</div>');}
-function menuLine(id,name,glyph,extra=''){return `<button class="palm-menu-action ${extra}" id="${id}">${glyph}<span>${name}</span></button>`;}
+function openParticipants(id){const c=findComment(id);if(!c?.palm)return;const people=c.palm.status==='open'?c.palm.participants:palmHistory(c);openSheet(`${people.length}人${c.palm.status==='open'?'':'曾'}击掌`,people.map(person=>`<div class="palm-person">${avatar(person)}<span>${PEOPLE[person].name}</span></div>`).join('')||'<div class="empty">暂无击掌</div>');}
+function menuGlyph(name,size=23){
+ const paths={hand:'<path d="M8 12V5a1.5 1.5 0 0 1 3 0v6-8a1.5 1.5 0 0 1 3 0v8-6a1.5 1.5 0 0 1 3 0v7-3a1.5 1.5 0 0 1 3 0v7c0 4-2 6-6 6h-1c-2 0-3.6-1-4.7-2.6L4.2 14a1.6 1.6 0 0 1 2.5-2l2 2"/>',copy:'<rect x="4" y="6" width="14" height="16" rx="3"/><path d="M8 3h9a4 4 0 0 1 4 4v9M8 11h6M8 15h6"/>',quote:'<path d="M5 4h14a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-5l-5 4v-4H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/><path d="M8 9h2v3l-2 2m6-5h2v3l-2 2"/>',send:'<path d="m21 3-7 19-4-9-9-4 20-6Z"/><path d="m10 13 11-10"/>',report:'<path d="m10 3-9 17a1 1 0 0 0 1 1h20a1 1 0 0 0 1-1L14 3a2 2 0 0 0-4 0Z"/><path d="M12 8v6m0 3v.1"/>',delete:'<path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/>'};
+ return paths[name]?`<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name]}</svg>`:icon(name,size);
+}
 function openPalmMenu(id){
  const c=findComment(id);if(!c)return;const own=c.author===role,joined=c.palm?.participants.includes(role);
- const line=(key,name,glyph)=>menuLine(key,name,icon(glyph,22));
- openSheet('评论操作',`<div class="sheet-share-people">${Object.keys(PEOPLE).map(person=>`<button data-share-person="${person}">${avatar(person)}<span>${PEOPLE[person].name}</span></button>`).join('')}</div>
- <div class="comment-action-group">${line('menu-share','分享到微信','share')}${line('menu-ask','问点点','chat')}${line('menu-search','搜索','search')}</div>
- ${own?`<div class="comment-action-group palm-settings-group"><label class="palm-setting">${handIcon()}<span>击掌评论</span><input id="toggle-palm-type" type="checkbox" role="switch" aria-label="击掌评论" ${c.palm?.status==='open'?'checked':''}><span class="switch-track" aria-hidden="true"></span></label></div>`:''}
- <div class="comment-action-group">${line('menu-reply','回复','chat')}${line('menu-save',c.savedBy?.includes(role)?'取消收藏':'收藏','star')}${line('menu-copy','复制','copy')}${line('menu-quote','引用发笔记','quote')}${!own?line('menu-private','私信','send')+line('menu-like',c.likedBy.includes(role)?'取消点赞':'点赞','heart'):''}${own?line('edit-comment','编辑评论','pen'):''}${c.palm&&!own&&(joined||c.palm.status==='open')?menuLine('menu-palm',joined?'取消击掌':'击掌',handIcon()):''}</div>
- <div class="comment-action-group">${line('menu-dislike','不喜欢','neutral')}${line('menu-report','举报','warning')}${own?menuLine('delete-palm','删除评论',icon('trash',22),'danger'):''}</div>`,true);
- const bind=(key,action)=>{const el=document.getElementById(key);if(el)el.onclick=action;};
- bind('menu-reply',()=>openEditor(id));bind('edit-comment',()=>openEditor(id,false,true));
- const type=document.getElementById('toggle-palm-type');if(type)type.onchange=()=>{const y=document.querySelector('.comment-actions-sheet').scrollTop;if(setPalmType(id,type.checked)){openPalmMenu(id);document.querySelector('.comment-actions-sheet').scrollTop=y;document.getElementById('toggle-palm-type').focus({preventScroll:true});}};
- bind('delete-palm',()=>deletePalm(id));bind('menu-like',()=>{closeEditor();toggleCommentLike(id);});bind('menu-palm',()=>{closeEditor();togglePalm(id);});
- bind('menu-save',()=>{toggleList(c.savedBy??=[],role);save();openPalmMenu(id);});
- bind('menu-copy',async()=>{try{await navigator.clipboard.writeText(c.text);showToast('已复制');}catch{showToast('浏览器暂不支持复制');}closeEditor();});
- bind('menu-private',()=>navigate('chat',{peer:c.author}));
- for(const key of ['menu-share','menu-ask','menu-search','menu-quote','menu-dislike','menu-report'])bind(key,()=>showToast('已保留入口，本轮暂未模拟'));
- document.querySelectorAll('[data-share-person]').forEach(el=>el.onclick=()=>showToast('已保留分享入口，本轮暂未模拟'));
+ const row=(name,text,key,extra='')=>`<button class="palm-menu-action ${extra}" id="${key}">${menuGlyph(name)}<span>${text}</span></button>`;
+ openSheet('评论操作',`<div class="sheet-share-people">${Object.keys(PEOPLE).filter(p=>p!==role).map(p=>`<button data-sheet-peer="${p}">${avatar(p)}<span>${PEOPLE[p].name}</span></button>`).join('')}</div><div class="comment-action-group share-actions">${row('chat','分享到微信','menu-wechat')}${row('chat','问点点','menu-ask')}${row('search','搜索','menu-search')}</div>${own?`<div class="comment-action-group palm-setting-group"><label class="palm-setting-row">${menuGlyph('hand')}<span>击掌评论</span><input id="toggle-palm-type" type="checkbox" role="switch" aria-label="击掌评论" ${c.palm?.status==='open'?'checked':''}><i class="setting-switch" aria-hidden="true"></i></label></div>`:c.palm&&(joined||c.palm.status==='open')?`<div class="comment-action-group">${row('hand',joined?'取消击掌':'击掌','menu-palm')}</div>`:''}<div class="comment-action-group regular-actions">${row('chat','回复','menu-reply')}${row('star',c.savedBy?.includes(role)?'取消收藏':'收藏','menu-save')}${row('copy','复制','menu-copy')}${row('quote','引用发笔记','menu-quote')}${row('send','私信','menu-private')}</div><div class="comment-action-group">${own?row('pen','编辑评论','edit-comment')+row('delete','删除评论','delete-palm','danger'):row('heart',c.likedBy.includes(role)?'取消点赞':'点赞','menu-like')+row('neutral','不喜欢','menu-dislike')+row('report','举报','menu-report')}</div>`,true);
+ document.getElementById('menu-reply').onclick=()=>openEditor(id);
+ const edit=document.getElementById('edit-comment');if(edit)edit.onclick=()=>openEditor(id,false,true);
+ const type=document.getElementById('toggle-palm-type');if(type)type.onchange=()=>setPalmType(id,type.checked,{keepSheet:true});
+ const remove=document.getElementById('delete-palm');if(remove)remove.onclick=()=>deletePalm(id);
+ const like=document.getElementById('menu-like');if(like)like.onclick=()=>{closeEditor();toggleCommentLike(id);};
+ const palm=document.getElementById('menu-palm');if(palm)palm.onclick=()=>{closeEditor();togglePalm(id);};
+ document.getElementById('menu-save').onclick=()=>{c.savedBy??=[];toggleList(c.savedBy,role);save();openPalmMenu(id);};
+ document.getElementById('menu-copy').onclick=async()=>{try{await navigator.clipboard.writeText(c.text);showToast('评论已复制');}catch{showToast('当前浏览器暂不支持复制');}};
+ document.getElementById('menu-private').onclick=()=>{if(c.author===role)showToast('这是你自己的评论');else navigate('chat',{peer:c.author});};
+ document.querySelectorAll('[data-sheet-peer]').forEach(el=>el.onclick=()=>navigate('chat',{peer:el.dataset.sheetPeer}));
+ for(const key of ['menu-wechat','menu-ask','menu-search','menu-quote','menu-dislike','menu-report']){const el=document.getElementById(key);if(el)el.onclick=()=>showToast('已保留入口，本轮暂未模拟');}
 }
-function setPalmType(id,enabled){
+function setPalmType(id,enabled,options={}){
  const c=findComment(id);if(!c||c.author!==role)return false;
- const before=structuredClone(data);c.palm??={status:'open',participants:[]};c.palm.historyParticipants=[...new Set([...(c.palm.historyParticipants||[]),...c.palm.participants])];c.palm.status=enabled?'open':'closed';if(!enabled&&!c.palm.historyParticipants.length)delete c.palm;
+ const before=structuredClone(data),scroll=document.querySelector('.comment-actions-sheet')?.scrollTop||0;c.palm??={status:'open',participants:[],history:[]};c.palm.history=palmHistory(c);
+ if(!enabled&&!c.palm.history.length)delete c.palm;else c.palm.status=enabled?'open':'closed';
  try{localStorage.setItem(STORAGE,JSON.stringify(data));}catch{data=before;showToast('设置未保存，请重试');return false;}
- closeEditor();recordScroll();render();showToast(enabled?'已设为击掌评论':c.palm?'已停止新击掌，历史交流已保留':'已恢复普通评论');return true;
+ closeEditor();recordScroll();render();if(options.keepSheet){openPalmMenu(id);document.querySelector('.comment-actions-sheet').scrollTop=scroll;}
+ showToast(enabled?'已设为击掌评论':c.palm?'已关闭击掌，历史记录与交流已保留':'已恢复普通评论');return true;
 }
 function endPalm(id){return setPalmType(id,false);}
 function deletePalm(id){const c=findComment(id);if(!c||c.author!==role)return false;c.deleted=true;if(c.palm)c.palm.status='closed';save();closeEditor();recordScroll();render();showToast(c.palm?'评论已删除，击掌已失效':'评论已删除');return true;}
