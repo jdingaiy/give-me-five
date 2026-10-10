@@ -126,3 +126,19 @@
 .palm-dm-play,.chat-line.mine .palm-dm-play{width:176px;height:145px;max-width:100%;padding:0;background:transparent;border-radius:0;color:inherit}
 .palm-dm-play>picture{display:block;width:100%;height:100%}
 .palm-dm-animation{display:block;width:100%;height:100%;object-fit:contain}
+
+/* Compact private-reply draft above the screenshot keyboard. */
+.private-palm-composer{padding:14px 12px 10px;background:#fff;border-radius:16px 16px 0 0}
+.private-palm-heading{display:flex;align-items:center;gap:8px;margin-bottom:12px;color:#777;font-size:13px}
+.private-palm-heading>img{width:28px;height:28px;border-radius:4px;object-fit:cover}
+.private-palm-input{display:flex;align-items:center;gap:7px;background:#f5f5f5;border-radius:22px;padding:7px 8px 7px 12px}
+.private-palm-input>img{flex-shrink:0;width:28px;height:28px;object-fit:contain}
+.private-palm-input textarea{min-width:0;flex:1;resize:none;height:44px;padding:2px 0;border:0;background:transparent;font-family:inherit;font-size:14px;line-height:20px;outline:none}
+.private-palm-input .send{flex-shrink:0;background:#ff2442;color:#fff;border-radius:18px;padding:8px 15px;font-size:14px}
+.private-palm-input .send:disabled{background:#ffb8c2}
+.palm-dm-message{gap:2px}
+.palm-dm-play,.chat-line.mine .palm-dm-play{width:112px;height:98px}
+.palm-avatar-stack .palm-avatar{position:relative}
+.palm-avatar-stack .palm-avatar:nth-child(1){z-index:3}
+.palm-avatar-stack .palm-avatar:nth-child(2){z-index:2}
+.palm-avatar-stack .palm-avatar:nth-child(3){z-index:1}

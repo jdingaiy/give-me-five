@@ -26,7 +26,7 @@ const participants=()=>state().comments.find(c=>c.id==='c2').palm.participants;
  assert.equal(host().querySelector('.comment-swipe-surface').style.transform,'');assert(!d.querySelector('.palm-swipe-hint'));swipe(125);assert.deepEqual(participants(),['qing']);assert.equal(state().notifications.filter(n=>n.kind==='palm').length,1);
  // No automatic private message; original public and private flows still connect.
  assert.equal(Object.values(state().chats).flat().filter(m=>m.kind==='palm-dm').length,0);
- ev("switchRole('lin');navigate('likes')");assert(d.querySelector('#app').textContent.includes('阿青向你击了个掌'));click('[data-action="palm-dm"]');const chats=JSON.stringify(state().chats);assert.equal(Object.values(state().chats).flat().filter(m=>m.kind==='palm-dm').length,1);assert(!d.querySelector('.palm-dm-note-title'));
+ ev("switchRole('lin');navigate('likes')");assert(d.querySelector('#app').textContent.includes('阿青向你击了个掌'));click('[data-action="palm-dm"]');click('#send-private-palm');const chats=JSON.stringify(state().chats);assert.equal(Object.values(state().chats).flat().filter(m=>m.kind==='palm-dm').length,1);assert(!d.querySelector('.palm-dm-note-title'));
  ev("navigate('note');openEditor('c2',true)");assert(d.querySelector('#notify-palm').checked);ev("publishComment('新手线路整理好啦！',{responding:true,notify:true})");const notices=state().notifications.filter(n=>n.kind==='palm-response').length;
  // Closing preserves records, replies and private messages; suppresses reminders; reopening doesn't backfill.
  menu();click('#toggle-palm-type');click('.composer-overlay');assert.equal(ev("findComment('c2').palm.status"),'closed');assert.deepEqual(participants(),['qing']);assert.equal(JSON.stringify(state().chats),chats);
