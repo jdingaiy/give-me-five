@@ -13,8 +13,8 @@ const participants=()=>state().comments.find(c=>c.id==='c2').palm.participants;
 (async()=>{
  // Start with an existing ordinary comment with replies and preserve all its fields.
  const initialCount=state().comments.length;const before=state().comments.find(c=>c.id==='c2'),replies=state().comments.filter(c=>c.parent==='c2');
- ev("rawComment('c2').images=['assets/camera.jpg']");menu();assert.equal(d.querySelector('.palm-setting-row>span').textContent,'邀请击掌');assert(!d.querySelector('#toggle-palm-type').checked);click('#toggle-palm-type');click('.composer-overlay');
- assert.equal(state().comments.length,initialCount);assert.equal(state().comments.find(c=>c.id==='c2').text,before.text);assert.deepEqual(state().comments.filter(c=>c.parent==='c2'),replies);assert.deepEqual(state().comments.find(c=>c.id==='c2').images,['assets/camera.jpg']);assert.deepEqual(participants(),[]);
+ ev("rawComment('c2').images=['assets/climbing-gym.jpg']");menu();assert.equal(d.querySelector('.palm-setting-row>span').textContent,'邀请击掌');assert(!d.querySelector('#toggle-palm-type').checked);click('#toggle-palm-type');click('.composer-overlay');
+ assert.equal(state().comments.length,initialCount);assert.equal(state().comments.find(c=>c.id==='c2').text,before.text);assert.deepEqual(state().comments.filter(c=>c.parent==='c2'),replies);assert.deepEqual(state().comments.find(c=>c.id==='c2').images,['assets/climbing-gym.jpg']);assert.deepEqual(participants(),[]);
  swipe(120);assert.deepEqual(participants(),[]); // own comment cannot join
  ev("switchRole('qing')");assert(d.querySelector('.palm-swipe-hint'));assert(d.querySelector('#palm-c2 [data-action="palm"] svg')); assert.equal(ev("setPalmType('c2',false)"),false);
  menu();assert(!d.querySelector('#toggle-palm-type'));assert(d.querySelector('#menu-palm'));click('.composer-overlay');
@@ -27,10 +27,10 @@ const participants=()=>state().comments.find(c=>c.id==='c2').palm.participants;
  // No automatic private message; original public and private flows still connect.
  assert.equal(Object.values(state().chats).flat().filter(m=>m.kind==='palm-dm').length,0);
  ev("switchRole('lin');navigate('likes')");assert(d.querySelector('#app').textContent.includes('阿青向你击了个掌'));click('[data-action="palm-dm"]');const chats=JSON.stringify(state().chats);assert.equal(Object.values(state().chats).flat().filter(m=>m.kind==='palm-dm').length,1);assert(!d.querySelector('.palm-dm-note-title'));
- ev("navigate('note');openEditor('c2',true)");assert(d.querySelector('#notify-palm').checked);ev("publishComment('样片来啦！',{responding:true,notify:true})");const notices=state().notifications.filter(n=>n.kind==='palm-response').length;
+ ev("navigate('note');openEditor('c2',true)");assert(d.querySelector('#notify-palm').checked);ev("publishComment('新手线路整理好啦！',{responding:true,notify:true})");const notices=state().notifications.filter(n=>n.kind==='palm-response').length;
  // Closing preserves records, replies and private messages; suppresses reminders; reopening doesn't backfill.
  menu();click('#toggle-palm-type');click('.composer-overlay');assert.equal(ev("findComment('c2').palm.status"),'closed');assert.deepEqual(participants(),['qing']);assert.equal(JSON.stringify(state().chats),chats);
- ev("openEditor('c2',true)");assert(d.querySelector('#notify-palm').disabled);ev("publishComment('关闭期间的更新',{responding:true,notify:true})");assert.equal(state().notifications.filter(n=>n.kind==='palm-response').length,notices);
+ ev("openEditor('c2',true)");assert(!d.querySelector('#notify-palm'));ev("publishComment('关闭期间的更新',{responding:true,notify:true})");assert.equal(state().notifications.filter(n=>n.kind==='palm-response').length,notices);
  ev("switchRole('qing')");menu();assert.equal(d.querySelector('#menu-palm').textContent.trim(),'取消击掌');click('#menu-palm');assert.deepEqual(participants(),[]);menu();assert(!d.querySelector('#menu-palm'));click('.composer-overlay');swipe(120);assert.deepEqual(participants(),[]);
  ev("switchRole('lin')");menu();click('#toggle-palm-type');click('.composer-overlay');assert.equal(ev("findComment('c2').palm.status"),'open');assert.equal(state().notifications.filter(n=>n.kind==='palm-response').length,notices);
  ev("switchRole('qing')");
