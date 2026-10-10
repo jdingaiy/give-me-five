@@ -80,3 +80,6 @@
 .participants-sheet{height:50%;max-height:50%}.participants-footer{flex:0 0 auto;padding:12px 15px 20px;background:#f5f5f6}.participants-footer .participants-respond{margin:0;min-height:42px;border-radius:24px;font-size:16px}.participants-sheet .sheet-scroll-body{padding-bottom:8px}
 /* Group responses reuse the compact comment composer, with recipients above the text area. */
 .comment-composer.group-response-composer{height:auto;max-height:none}.response-recipients{display:flex;align-items:center;gap:10px;padding:0 2px 11px;font-size:14px;color:#333}.response-recipients>span{white-space:nowrap}.response-recipient-avatars{display:flex;align-items:center;gap:9px;overflow-x:auto;scrollbar-width:none}.response-recipient-avatars .avatar{width:28px;height:28px;flex-shrink:0}.palm-reminder[hidden]{display:none}
+
+/* Keep the participant sheet mounted beneath its response editor. */
+.response-editor-layer{position:absolute;inset:0;z-index:7}.composer-overlay[inert]{pointer-events:none}
