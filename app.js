@@ -10,8 +10,8 @@ const SEED={version:2,comments:[
  {id:'c3',author:'qing',text:'租鞋舒服吗？第一次去需要自己买鞋吗？',time:'昨天',place:'上海',baseLikes:5,likedBy:['lin','cheng']},
  {id:'r4',author:'cheng',text:'可以先租鞋体验，尺码不舒服就找工作人员换，不用急着买。',parent:'c3',replyTo:'c3',time:'昨天',place:'上海',baseLikes:4,likedBy:[]},
  {id:'r5',author:'lin',text:'我上次换大半码之后舒服多了，脚趾微弯就好。',parent:'c3',replyTo:'c3',time:'3小时前',place:'浙江',baseLikes:1,likedBy:['qing']},
- {id:'c4',author:'lin',text:'新手线路多不多？希望能找到几条有成就感的。',time:'昨天',place:'浙江',baseLikes:2,likedBy:[]},
- {id:'c5',author:'qing',text:'休息区看起来不错，爬累了坐着看别人解线也很开心 🧗',time:'昨天',place:'上海',baseLikes:3,likedBy:['lin']}
+ {id:'c4',author:'zhou',text:'新手线路多不多？希望能找到几条有成就感的。',time:'昨天',place:'浙江',baseLikes:2,likedBy:[]},
+ {id:'c5',author:'mei',text:'休息区看起来不错，爬累了坐着看别人解线也很开心 🧗',time:'昨天',place:'上海',baseLikes:3,likedBy:['lin']}
 ],notifications:[
  {id:'n1',kind:'reply',actor:'qing',recipient:'lin',commentId:'r3',refId:'r2',time:'2小时前'},
  {id:'n2',kind:'like',actor:'qing',recipient:'lin',commentId:'c2',time:'3小时前'},
@@ -25,7 +25,7 @@ const SEED={version:2,comments:[
  {id:'n10',kind:'reply',actor:'lin',recipient:'qing',commentId:'r2',refId:'r1',time:'昨天 19:26'},
  {id:'n11',kind:'like',actor:'lin',recipient:'qing',commentId:'r1',time:'昨天 19:25'},
  {id:'n12',kind:'like',actor:'qing',recipient:'lin',commentId:'r5',time:'2小时前'},
- {id:'n13',kind:'like',actor:'lin',recipient:'qing',commentId:'c5',time:'昨天 18:10'}
+ {id:'n13',kind:'like',actor:'lin',recipient:'mei',commentId:'c5',time:'昨天 18:10'}
 ],chats:{'lin-qing':[
  {id:'m1',sender:'qing',text:'在阿橙的评论区看到你也喜欢一个人攀岩！',time:'昨天 19:30'},
  {id:'m2',sender:'lin',text:'对呀，刚开始练新手线路，一个人去也挺自在。',time:'昨天 19:31'},
@@ -33,11 +33,19 @@ const SEED={version:2,comments:[
 ],'cheng-lin':[{id:'m4',sender:'lin',text:'你好，想问问这家岩馆周末的新手区挤不挤？',time:'昨天 18:55'},{id:'m5',sender:'cheng',text:'下午会热闹一点，刚开始可以挑人少的时候，慢慢练～',time:'昨天 19:02'}],
 'cheng-qing':[{id:'m6',sender:'qing',text:'谢谢你分享这家岩馆的新手体验！',time:'昨天 20:20'},{id:'m7',sender:'cheng',text:'不客气，希望你也玩得开心 🧗',time:'昨天 20:22'}]},noteLikes:[],noteSaves:[],follows:[]};
 const MULTI_PALM_DEMO={id:'demo-multi-palm',author:'xia',text:'有没有也喜欢一个人去攀岩的？',time:'1小时前',place:'福建',baseLikes:6,likedBy:[],palm:{status:'open',participants:[],history:[]}};
-SEED.comments.push(structuredClone(MULTI_PALM_DEMO));
+const EXTRA_COMMENTS=[
+ {id:'r6',author:'mei',text:'新手区有几条大抓点的直墙，我第一次去也完成了两条，很有成就感！',parent:'c4',replyTo:'c4',time:'1小时前',place:'上海',baseLikes:2,likedBy:[]},
+ {id:'r7',author:'xia',text:'我也会在休息区看别人解线，经常能发现新的踩点方法。',parent:'c5',replyTo:'c5',time:'45分钟前',place:'福建',baseLikes:1,likedBy:[]}
+];
+SEED.comments.splice(1,0,structuredClone(MULTI_PALM_DEMO));SEED.comments.push(...structuredClone(EXTRA_COMMENTS));
 const STORAGE='rednote-community-base-v1';
 let data=structuredClone(SEED);
 try{const saved=JSON.parse(localStorage.getItem(STORAGE));if(saved?.version===2&&Array.isArray(saved.comments)&&Array.isArray(saved.notifications)&&saved.chats)data=saved;}catch{}
 if(!data.comments.some(c=>c.id===MULTI_PALM_DEMO.id))data.comments.push(structuredClone(MULTI_PALM_DEMO));
+for(const c of EXTRA_COMMENTS)if(!data.comments.some(existing=>existing.id===c.id))data.comments.push(structuredClone(c));
+for(const id of ['c4','c5']){const c=data.comments.find(c=>c.id===id),seed=SEED.comments.find(c=>c.id===id);if(c&&c.text===seed.text)c.author=seed.author;}
+const oldLike=data.notifications.find(n=>n.id==='n13');if(oldLike)oldLike.recipient='mei';
+const demoIndex=data.comments.findIndex(c=>c.id===MULTI_PALM_DEMO.id),demo=data.comments.splice(demoIndex,1)[0],firstUnpinned=data.comments.findIndex(c=>!c.parent&&!c.pinned);data.comments.splice(firstUnpinned<0?data.comments.length:firstUnpinned,0,demo);
 let role='lin',page=readRoute(),chatPeer=page.peer||'qing',replyTarget=null,toastTimer,uid=0;
 const scrollPositions={},expanded=new Set(),drafts=new Map();
 const app=document.getElementById('app');
@@ -81,7 +89,7 @@ function renderNotifications(kind){
 function renderChat(){if(chatPeer===role||!PEOPLE[chatPeer])chatPeer=role==='lin'?'qing':'lin';const messages=data.chats[keyChat(role,chatPeer)]||[];let lastTime='';return `<header class="topbar"><button class="back" data-action="back" aria-label="返回消息">${icon('back',24)}</button><div class="note-author">${avatar(chatPeer,'top')}<span>${PEOPLE[chatPeer].name}</span></div><div class="right"><button data-action="unavailable" aria-label="会话设置">${icon('grid',23)}</button></div></header><div class="scroll chat-scroll">${messages.map(m=>{const time=m.time!==lastTime?`<div class="chat-time">${esc(m.time)}</div>`:'';lastTime=m.time;return `${time}<div class="chat-line ${m.sender===role?'mine':''}">${avatar(m.sender,'chat-avatar')}<div class="${m.kind==='palm-dm'?'palm-dm-message':'bubble'}">${m.kind==='palm-dm'?renderPalmDM(m):esc(m.text)}</div></div>`;}).join('')}</div><footer class="chat-bottom"><div class="emoji-shortcuts">${[['👍','棒'],['😂','笑哭了'],['😍','心心眼'],['🐱','呢'],['🥹','抽泣']].map(([e,t])=>`<button data-action="emoji" data-emoji="${e}">${e} ${t}</button>`).join('')}</div><form class="chat-input" id="chat-form"><button type="button" data-action="unavailable" aria-label="语音消息">${icon('voice',25)}</button><textarea id="chat-text" rows="1" maxlength="2000" aria-label="发消息" placeholder="发消息...">${esc(drafts.get('chat:'+role+':'+chatPeer)||'')}</textarea><button type="button" id="chat-face" data-action="emoji" data-emoji="😊" aria-label="表情">${icon('smile',25)}</button><button type="button" id="chat-plus" data-action="unavailable" aria-label="更多消息类型">${icon('plus',25)}</button><button type="submit" id="chat-send" class="chat-send" hidden>发送</button></form></footer>`;}
 function toggleList(list,value){const i=list.indexOf(value);i<0?list.push(value):list.splice(i,1);}
 function toggleCommentLike(id){const c=findComment(id);if(!c)return;const had=c.likedBy.includes(role);toggleList(c.likedBy,role);if(c.author!==role){if(had){data.notifications=data.notifications.filter(n=>!(n.kind==='like'&&n.actor===role&&n.commentId===id));}else{data.notifications.unshift({id:newId('n'),kind:'like',actor:role,recipient:c.author,commentId:id,time:'刚刚'});}}save();recordScroll();render();}
-function bindApp(){bindCommentMenus();app.querySelectorAll('[data-action]').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();const id=el.dataset.id;switch(el.dataset.action){case'palm-dm-select':openPalmDM(id,true);break;case'palm-dm':openPalmDM(id);break;case'play-palm-dm':playPalmDM(el);break;case'palm-source':openPalmSource(id);break;case'palm':togglePalm(id);break;case'participants':openParticipants(id);break;case'respond':openEditor(id,true);break;case'open-notification':openNotification(id);break;case'back':goBack();break;case'navigate':navigate(el.dataset.page);break;case'compose':openEditor();break;case'reply':openEditor(id);break;case'chat':navigate('chat',{peer:el.dataset.peer});break;case'open-note':navigate('note',{target:id});break;case'to-comments':document.getElementById('comments')?.scrollIntoView({block:'start',behavior:'instant'});break;case'expand':recordScroll();expanded.has(id)?expanded.delete(id):expanded.add(id);render();break;case'comment-like':toggleCommentLike(id);break;case'note-like':recordScroll();toggleList(data.noteLikes,role);save();render();break;case'note-save':recordScroll();toggleList(data.noteSaves,role);save();render();break;case'follow':recordScroll();toggleList(data.follows,role);save();render();break;case'emoji':{const t=document.getElementById('chat-text');if(t){t.value+=el.dataset.emoji;drafts.set('chat:'+role+':'+chatPeer,t.value);updateChatInput();t.focus();}break;}case'share':showToast('演示原型暂未模拟分享');break;case'unavailable':showToast('已保留入口，本轮暂未模拟');break;}}));app.querySelectorAll('[data-notification]').forEach(el=>{const open=()=>{const n=data.notifications.find(n=>n.id===el.dataset.notification);if(n)openNotification(n.id);};el.addEventListener('click',open);el.addEventListener('keydown',e=>{if(e.target===el&&(e.key==='Enter'||e.key===' ')){e.preventDefault();open();}});});const text=document.getElementById('chat-text');if(text){text.addEventListener('input',()=>{drafts.set('chat:'+role+':'+chatPeer,text.value);updateChatInput();});text.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();sendMessage(text.value);}});document.getElementById('chat-form').addEventListener('submit',e=>{e.preventDefault();sendMessage(text.value);});updateChatInput();}}
+function bindApp(){bindCommentMenus();app.querySelectorAll('[data-action]').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();const id=el.dataset.id;switch(el.dataset.action){case'palm-dm-select':openPalmDM(id,true);break;case'palm-dm':openPalmDM(id);break;case'play-palm-dm':playPalmDM(el);break;case'palm-source':openPalmSource(id);break;case'palm':togglePalm(id,{source:'tap'});break;case'participants':openParticipants(id);break;case'respond':openEditor(id,true);break;case'open-notification':openNotification(id);break;case'back':goBack();break;case'navigate':navigate(el.dataset.page);break;case'compose':openEditor();break;case'reply':openEditor(id);break;case'chat':navigate('chat',{peer:el.dataset.peer});break;case'open-note':navigate('note',{target:id});break;case'to-comments':document.getElementById('comments')?.scrollIntoView({block:'start',behavior:'instant'});break;case'expand':recordScroll();expanded.has(id)?expanded.delete(id):expanded.add(id);render();break;case'comment-like':toggleCommentLike(id);break;case'note-like':recordScroll();toggleList(data.noteLikes,role);save();render();break;case'note-save':recordScroll();toggleList(data.noteSaves,role);save();render();break;case'follow':recordScroll();toggleList(data.follows,role);save();render();break;case'emoji':{const t=document.getElementById('chat-text');if(t){t.value+=el.dataset.emoji;drafts.set('chat:'+role+':'+chatPeer,t.value);updateChatInput();t.focus();}break;}case'share':showToast('演示原型暂未模拟分享');break;case'unavailable':showToast('已保留入口，本轮暂未模拟');break;}}));app.querySelectorAll('[data-notification]').forEach(el=>{const open=()=>{const n=data.notifications.find(n=>n.id===el.dataset.notification);if(n)openNotification(n.id);};el.addEventListener('click',open);el.addEventListener('keydown',e=>{if(e.target===el&&(e.key==='Enter'||e.key===' ')){e.preventDefault();open();}});});const text=document.getElementById('chat-text');if(text){text.addEventListener('input',()=>{drafts.set('chat:'+role+':'+chatPeer,text.value);updateChatInput();});text.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();sendMessage(text.value);}});document.getElementById('chat-form').addEventListener('submit',e=>{e.preventDefault();sendMessage(text.value);});updateChatInput();}}
 function updateChatInput(){const t=document.getElementById('chat-text');if(!t)return;const ready=!!t.value.trim();document.getElementById('chat-send').hidden=!ready;document.getElementById('chat-plus').hidden=ready;t.style.height='27px';t.style.height=Math.min(t.scrollHeight,100)+'px';}
 function sendMessage(text){const value=text.trim();if(!value||value.length>2000)return false;const key=keyChat(role,chatPeer);(data.chats[key]??=[]).push({id:newId('m'),sender:role,text:value,time:timeNow()});drafts.delete('chat:'+role+':'+chatPeer);save();render();document.getElementById('chat-text')?.focus();return true;}
 function timeNow(){return new Intl.DateTimeFormat('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date());}
@@ -142,7 +150,14 @@ function togglePalm(id,options={}){
   if(!n){n={id:newId('n'),kind:'palm',recipient:c.author,commentId:id,actors:[]};data.notifications.unshift(n);}
   n.actors=[...new Set([...(n.actors||[n.actor]).filter(Boolean),role])];n.actor=role;n.time='刚刚';
  }
- if(!joined)(data.palmSuccessHints??={})[role]=true;
+ if(!joined){
+  (data.palmSuccessHints??={})[role]=true;
+  (data.palmHints??={})[role]=true;
+  if(options.source==='tap'){
+   if(!data.palmTapLearning?.[role])(data.palmTapLearning??={})[role]={commentId:id,notBefore:Date.now()+2400};
+  }
+  if(options.source==='swipe')(data.palmSwipeHints??={})[role]=true;
+ }
  // Cancellation keeps previously delivered notifications and all conversations intact.
  try{localStorage.setItem(STORAGE,JSON.stringify(data));}catch{data=before;showToast('击掌未提交成功，请重试');return false;}
  if(!options.deferRender){recordScroll();if(joined)render();else animatePalmCollision(id,()=>{if(role===actingRole)render();});}
@@ -192,14 +207,14 @@ function animatePalmCollision(id,finish=()=>{},distance=0,motion=null){
  b.insertAdjacentHTML('beforeend','<span class="bound-palm palm-b" aria-hidden="true">✋</span>');
  layer.insertAdjacentHTML('beforeend',`<div class="palm-avatar-unit unit-a avatar-hit-a">${avatar(c.author,'collision-a')}<span class="bound-palm palm-a" aria-hidden="true">🤚</span></div>`);
  const a=layer.querySelector('.unit-a');a.style.top=g.y+'px';a.style.width=a.style.height=g.size+'px';
- setTimeout(()=>{if(activePalmMotion!==motion||!host.isConnected)return;const row=host.querySelector('.palm-row');if(row){row.outerHTML=renderPalm(c);const control=host.querySelector('.palm-mark[data-action="palm"]');if(control)control.onclick=e=>{e.stopPropagation();togglePalm(id);};}},reduced?10:350);
+ setTimeout(()=>{if(activePalmMotion!==motion||!host.isConnected)return;const row=host.querySelector('.palm-row');if(row){row.outerHTML=renderPalm(c);const control=host.querySelector('.palm-mark[data-action="palm"]');if(control)control.onclick=e=>{e.stopPropagation();togglePalm(id,{source:'tap'});};}},reduced?10:350);
  setTimeout(()=>{if(activePalmMotion===motion)clearPalmMotion();host.classList.remove('colliding','swipe-collision');finish();},reduced?20:560);
 }
 function openNotification(id){const n=data.notifications.find(n=>n.id===id);if(!n)return;if(!findComment(n.commentId)){navigate('note');showToast('原评论已删除');return;}navigate('note',{target:n.commentId});}
 function openSheet(title,body,half=false){closeEditor();const root=document.getElementById('editor-root');root.innerHTML=`<div class="composer-overlay"><section class="composer palm-sheet ${half?'comment-actions-sheet':''}" role="dialog" aria-modal="true" aria-label="${title}">${half?'<div class="sheet-handle" aria-hidden="true"></div>':`<div class="composer-head"><span>${title}</span><button id="close-sheet" class="close">关闭</button></div>`}${body}</section></div>`;const close=document.getElementById('close-sheet');if(close)close.onclick=closeEditor;root.querySelector('.composer-overlay').onclick=e=>{if(e.target.classList.contains('composer-overlay'))closeEditor();};root.onkeydown=e=>{if(e.key==='Escape')closeEditor();if(e.key==='Tab'){const nodes=[...root.querySelectorAll('button:not(:disabled),input:not(:disabled)')];if(e.shiftKey&&document.activeElement===nodes[0]){e.preventDefault();nodes.at(-1).focus();}else if(!e.shiftKey&&document.activeElement===nodes.at(-1)){e.preventDefault();nodes[0].focus();}}};root.querySelector('button')?.focus();}
-let palmHintObserver;
+let palmHintObserver,palmSwipeHintObserver;
 function bindCommentMenus(){
- palmHintObserver?.disconnect();
+ palmHintObserver?.disconnect();palmSwipeHintObserver?.disconnect();
  app.querySelectorAll('[data-swipe-comment]').forEach(host=>{
  const id=host.dataset.swipeComment,surface=host.querySelector('.comment-swipe-surface'),reveal=host.querySelector('.swipe-reveal'),label=reveal.querySelector('span');
  let timer,start,dragging=false,blocked=false,dx=0,suppressUntil=0,motion;
@@ -218,7 +233,7 @@ function bindCommentMenus(){
   if(blocked)return;
   if(!dragging){if(Math.max(Math.abs(x),Math.abs(y))<10)return;
    if(!start.swipe||x<=0||Math.abs(x)<Math.abs(y)*1.4||!canJoinPalm(findComment(id))){blocked=true;return;}
-   dragging=true;host.classList.add('dragging');motion=createPalmMotion(host);host.setPointerCapture?.(e.pointerId);
+   dragging=true;app.querySelectorAll('.palm-swipe-hint').forEach(hint=>hint.remove());palmHintObserver?.disconnect();palmSwipeHintObserver?.disconnect();host.classList.add('dragging');motion=createPalmMotion(host);host.setPointerCapture?.(e.pointerId);
   }
   e.preventDefault();dx=Math.max(0,Math.min(136,x));surface.style.transform=`translateX(${dx}px)`;
   updatePalmDrag(host,motion,dx);reveal.style.opacity='0';host.classList.toggle('swipe-ready',motion.ready);label.textContent=motion.ready?'松手击掌':'右滑击掌';
@@ -228,7 +243,7 @@ function bindCommentMenus(){
   cancelHold();const submit=dragging&&motion?.ready,distance=dx;const didDrag=dragging;start=null;
   if(didDrag)suppressUntil=Date.now()+500;
   if(!submit){reset();return;}
-  if(!togglePalm(id,{joinOnly:true,deferRender:true})){reset();return;}
+  if(!togglePalm(id,{joinOnly:true,deferRender:true,source:'swipe'})){reset();return;}
   host.querySelector('.palm-swipe-hint')?.remove();
   const currentRole=role;animatePalmCollision(id,()=>{motion=null;reset();if(host.isConnected&&role===currentRole){recordScroll();render();}},distance,motion);
  });
@@ -246,6 +261,30 @@ function bindCommentMenus(){
    if(window.IntersectionObserver){palmHintObserver=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting))mark();},{root:app.querySelector('.scroll'),threshold:.5});palmHintObserver.observe(first.querySelector('.palm-mark[data-action="palm"]'));}else mark();
   }
  }
+ bindSwipeDiscovery();
+}
+
+function bindSwipeDiscovery(){
+ const reader=role,lesson=data.palmTapLearning?.[reader];
+ if(!lesson||data.palmSwipeHints?.[reader]||!window.IntersectionObserver)return;
+ const candidates=[...app.querySelectorAll('[data-swipe-comment]')].filter(host=>host.dataset.swipeComment!==lesson.commentId&&canJoinPalm(findComment(host.dataset.swipeComment)));
+ if(!candidates.length)return;
+ const armed=new Map();
+ palmSwipeHintObserver=new IntersectionObserver(entries=>{
+  for(const entry of entries){
+   const host=entry.target,id=host.dataset.swipeComment;
+   if(!entry.isIntersecting){armed.set(host,true);continue;}
+   // Already-visible comments at binding time are not a new encounter.
+   if(!armed.get(host)){armed.set(host,false);continue;}
+   armed.set(host,false);
+   if(role!==reader||Date.now()<lesson.notBefore||activePalmMotion||data.palmSwipeHints?.[reader]||!canJoinPalm(findComment(id)))continue;
+   app.querySelectorAll('.palm-swipe-hint').forEach(hint=>hint.remove());
+   const hint=document.createElement('div');hint.className='palm-swipe-hint palm-gesture-hint';hint.textContent='试试右滑评论击掌 →';host.querySelector('.comment-text').append(hint);
+   hint.classList.add('is-visible');(data.palmSwipeHints??={})[reader]=true;save();palmSwipeHintObserver.disconnect();
+   setTimeout(()=>{hint.classList.remove('is-visible');setTimeout(()=>hint.remove(),180);},3200);break;
+  }
+ },{root:app.querySelector('.scroll'),threshold:.6});
+ candidates.forEach(host=>palmSwipeHintObserver.observe(host));
 }
 
 function openParticipants(id){const c=findComment(id);if(!c?.palm||c.author!==role)return;const people=c.palm.status==='open'?c.palm.participants:palmHistory(c),canRespond=c.palm.status==='open'&&c.palm.participants.some(person=>person!==role&&PEOPLE[person]);openSheet(`${people.length}人${c.palm.status==='open'?'':'曾'}击掌`,(people.map(person=>`<div class="palm-person">${avatar(person)}<span>${PEOPLE[person].name}</span></div>`).join('')||'<div class="empty">暂无击掌</div>')+(canRespond?'<button class="participants-respond" id="respond-participants">回应大家</button>':''));const respond=document.getElementById('respond-participants');if(respond)respond.onclick=()=>openEditor(id,true);}

@@ -8,6 +8,7 @@ NODE_PATH=/tmp/rednote-test-deps/node_modules node tests/comment-interaction-flo
 NODE_PATH=/tmp/rednote-test-deps/node_modules node tests/swipe-palm-flow.cjs
 NODE_PATH=/tmp/rednote-test-deps/node_modules node tests/palm-refinement-flow.cjs
 NODE_PATH=/tmp/rednote-test-deps/node_modules node tests/climbing-author-flow.cjs
+NODE_PATH=/tmp/rednote-test-deps/node_modules node tests/palm-teaching-flow.cjs
 ```
 
 Covers the A → B → A → B → A public response chain, notification anchors, local high-five animation, cancellation, late participation, unchecked reminders, participant aggregation, invitation closure, deleted-comment tombstones, normal comments/likes/replies, shared chats, escaping and persisted state. Browser layout is not asserted by this DOM test.
@@ -23,3 +24,5 @@ The refinement test checks the dedicated second settings card, full ordinary-com
 The climbing author test verifies clean zero-participant scene migration, distinct post/comment authors, no inert owner palm control, shared reply drafts, default-off reminders versus the participant-list shortcut, send-time recipient validation, immutable author-only notification history, reply navigation and cancelled/closed invitation behavior.
 
 Demo image: `dist/assets/climbing-gym.jpg`, generated with built-in imagegen. Brief: a natural daylight smartphone photograph of an indoor bouldering gym with beginner routes, colorful climbing holds, adult climbers, rental shoes and a rest bench; no text or branding.
+
+The teaching test uses controlled viewport observations to verify independent first-entry and swipe-discovery hints, delayed new-comment encounters after tap success, no instruction forced into success feedback, body anchoring, immediate drag dismissal, release-threshold submission, no automatic demonstration motion, one-time state, absent second-eligible-comment behavior, initial comment order and six distinct authors.
