@@ -174,22 +174,13 @@ function togglePalm(id,options={}){
 }
 const PALM_SWIPE_THRESHOLD=88;
 let activePalmMotion;
-function clearPalmMotion(){if(activePalmMotion){cancelAnimationFrame(activePalmMotion.effectFrame);activePalmMotion.effectPlayer?.destroy();activePalmMotion.layer.remove();activePalmMotion.host?.classList.remove('colliding','swipe-collision');activePalmMotion=null;}}
+function clearPalmMotion(){if(activePalmMotion){activePalmMotion.layer.remove();activePalmMotion.host?.classList.remove('colliding','swipe-collision');activePalmMotion=null;}}
 function mountPalmContact(motion,g,contactX,reduced){
  if(reduced)return;
- const size=g.size*1.9,effect=document.createElement('div');effect.className='palm-contact-lottie';effect.style.cssText=`left:${contactX-size/2}px;top:${g.y-size+8}px;width:${size}px;height:${size}px`;
- motion.layer.append(effect);
+ const size=g.size*1.9,effect=document.createElement('div');effect.className='palm-contact-svg';effect.style.cssText=`left:${contactX-size/2}px;top:${g.y-size+8}px;width:${size}px;height:${size}px`;
+ // Back is drawn first; the supplied palm stays in front throughout contact.
+ effect.innerHTML='<img class="contact-hand contact-hand-back" src="assets/high-five-back.svg" alt="" draggable="false"><img class="contact-hand contact-hand-palm" src="assets/high-five-palm.svg" alt="" draggable="false">';motion.layer.append(effect);
  const rays=document.createElement('div');rays.className='palm-contact-rays';rays.style.left=contactX+'px';rays.style.top=(g.y-size*.45)+'px';rays.innerHTML='<i></i><i></i><i></i>';motion.layer.append(rays);
- if(!window.lottie||typeof HIGH_FIVE_ANIMATION==='undefined')return;
- const animationData=structuredClone(HIGH_FIVE_ANIMATION);animationData.layers=animationData.layers.filter(layer=>layer.nm!=='Background');
- const player=motion.effectPlayer=window.lottie.loadAnimation({container:effect,renderer:'svg',loop:false,autoplay:false,animationData,rendererSettings:{preserveAspectRatio:'xMidYMid meet'}});
- const start=performance.now();
- const tick=now=>{if(activePalmMotion!==motion)return;const elapsed=now-start;
-  // First contact is frame 15.3. Hold it with compression, then use only the first recoil.
-  const frame=elapsed<190?15.3*elapsed/190:elapsed<241?15.3:Math.min(27.6,15.3+(elapsed-241)/89*12.3);
-  if(player.isLoaded)player.goToAndStop(frame,true);
-  if(elapsed<560)motion.effectFrame=requestAnimationFrame(tick);
- };motion.effectFrame=requestAnimationFrame(tick);
 }
 function palmGeometry(host,dx=0){
  const phone=document.querySelector('.phone').getBoundingClientRect(),source=host.querySelector('.comment-swipe-surface>.avatar'),rect=source.getBoundingClientRect(),base=host.getBoundingClientRect();
