@@ -152,8 +152,8 @@ function createPalmMotion(host){
  activePalmMotion={host,layer,b:layer.querySelector('img')};return activePalmMotion;
 }
 function updatePalmDrag(host,motion,dx){
- const g=palmGeometry(host,dx),gap=g.size+21-Math.min(20,dx*.16);
- motion.g=g;motion.bx=g.x-gap;const b=motion.b;b.style.left=(g.x-dx)+'px';b.style.top=g.y+'px';b.style.width=b.style.height=g.size+'px';b.style.transform=`translateX(${dx-gap}px)`;
+ const g=palmGeometry(host,dx),base=g.x-dx,entry=g.size+21,travel=entry*Math.min(1,dx/88);
+ motion.g=g;motion.base=base;motion.bx=base-entry+travel;const b=motion.b;b.style.left=base+'px';b.style.top=g.y+'px';b.style.width=b.style.height=g.size+'px';b.style.transform=`translateX(${travel-entry}px)`;
 }
 function retreatPalmMotion(host,motion){
  if(!motion)return;const g=motion.g||palmGeometry(host);motion.b.style.transition='transform .28s cubic-bezier(.2,.8,.2,1)';motion.b.style.transform=`translateX(${-g.size-21}px)`;
@@ -163,12 +163,12 @@ function animatePalmCollision(id,finish=()=>{},distance=0,motion=null){
  const host=app.querySelector(`[data-swipe-comment="${id}"]`),c=findComment(id);if(!host||!c){finish();return;}
  const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
  motion??=createPalmMotion(host);const g=palmGeometry(host,distance);
- const bstart=motion.bx??g.x-g.size-21,bhit=g.x-g.size+6;
+ const base=motion.base??g.x-distance,bstart=motion.bx??base-g.size-21,bhit=base+2,ahit=base+g.size-6;
  const layer=motion.layer;layer.classList.add('palm-collision');host.classList.add('colliding');
- layer.style.setProperty('--b-start',bstart+'px');layer.style.setProperty('--a-start',g.x+'px');layer.style.setProperty('--b-hit',bhit+'px');layer.style.setProperty('--a-hit',(g.x+2)+'px');
+ layer.style.setProperty('--b-start',bstart+'px');layer.style.setProperty('--a-start',g.x+'px');layer.style.setProperty('--b-hit',bhit+'px');layer.style.setProperty('--a-hit',ahit+'px');layer.style.setProperty('--a-rest',base+'px');layer.style.setProperty('--b-exit',(base-g.size-21)+'px');host.style.setProperty('--swipe-distance',distance+'px');
  const b=motion.b;b.style.left='0';b.style.top=g.y+'px';b.style.width=b.style.height=g.size+'px';b.style.transform='';b.classList.add('avatar-hit-b');
  layer.insertAdjacentHTML('beforeend',`${avatar(c.author,'collision-a avatar-hit-a')}<span class="collision-hands"><span>✋</span><span>🤚</span></span>`);
- const a=layer.querySelector('.collision-a');a.style.top=g.y+'px';a.style.width=a.style.height=g.size+'px';const hands=layer.querySelector('.collision-hands');hands.style.left=(g.x-18)+'px';hands.style.top=(g.y+g.size*.25)+'px';
+ const a=layer.querySelector('.collision-a');a.style.top=g.y+'px';a.style.width=a.style.height=g.size+'px';const hands=layer.querySelector('.collision-hands');hands.style.left=(base+g.size-22)+'px';hands.style.top=(g.y+g.size*.25)+'px';
  setTimeout(()=>{if(activePalmMotion===motion)clearPalmMotion();host.classList.remove('colliding');finish();},reduced?20:640);
 }
 function openNotification(id){const n=data.notifications.find(n=>n.id===id);if(!n)return;if(!findComment(n.commentId)){navigate('note');showToast('原评论已删除');return;}navigate('note',{target:n.commentId});}
@@ -183,8 +183,8 @@ function bindCommentMenus(){
  const reset=()=>{cancelHold();start=null;dragging=false;dx=0;host.classList.remove('dragging','swipe-ready');surface.style.transform='';reveal.style.opacity='';retreatPalmMotion(host,motion);motion=null;};
  const menu=()=>{reset();suppressUntil=Date.now()+700;openPalmMenu(id);};
  host.addEventListener('pointerdown',e=>{
-  if(e.button!==0||e.isPrimary===false||(host.classList.contains('colliding')||activePalmMotion)||e.target.closest('button,a,input,textarea,img'))return;
-  cancelHold();start={x:e.clientX,y:e.clientY,pointer:e.pointerId};dragging=false;blocked=false;dx=0;
+  if(e.button!==0||e.isPrimary===false||(host.classList.contains('colliding')||activePalmMotion)||e.target.closest('button,a,input,textarea')||e.target.closest('img')&&!e.target.matches('.comment-swipe-surface>.avatar'))return;
+  cancelHold();start={x:e.clientX,y:e.clientY,pointer:e.pointerId,swipe:!!(e.target.closest('.comment-name,.comment-text')||e.target.matches('.comment-swipe-surface>.avatar'))};dragging=false;blocked=false;dx=0;
   timer=setTimeout(()=>{if(host.isConnected){menu();}},500);
  });
  host.addEventListener('pointermove',e=>{
@@ -193,7 +193,7 @@ function bindCommentMenus(){
   if(Math.hypot(x,y)>8)cancelHold();
   if(blocked)return;
   if(!dragging){if(Math.max(Math.abs(x),Math.abs(y))<10)return;
-   if(x<=0||Math.abs(x)<Math.abs(y)*1.4||!canJoinPalm(findComment(id))){blocked=true;return;}
+   if(!start.swipe||x<=0||Math.abs(x)<Math.abs(y)*1.4||!canJoinPalm(findComment(id))){blocked=true;return;}
    dragging=true;host.classList.add('dragging');motion=createPalmMotion(host);host.setPointerCapture?.(e.pointerId);
   }
   e.preventDefault();dx=Math.max(0,Math.min(136,x));surface.style.transform=`translateX(${dx}px)`;
@@ -217,7 +217,7 @@ function bindCommentMenus(){
  });
  if(!data.palmHints?.[role]){
   const first=[...app.querySelectorAll('[data-swipe-comment]')].find(el=>canJoinPalm(findComment(el.dataset.swipeComment)));
-  if(first){const hint=document.createElement('div');hint.className='palm-swipe-hint';hint.textContent='向右滑动这条评论，即可击掌 →';first.querySelector('.comment-main').append(hint);
+  if(first){const hint=document.createElement('div');hint.className='palm-swipe-hint';hint.textContent='右滑头像、昵称或评论正文，即可击掌 →';first.querySelector('.comment-main').append(hint);
    const mark=()=>{(data.palmHints??={})[role]=true;save();palmHintObserver?.disconnect();};
    if(window.IntersectionObserver){palmHintObserver=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting))mark();},{root:app.querySelector('.scroll'),threshold:.5});palmHintObserver.observe(hint);}else mark();
   }
