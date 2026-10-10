@@ -83,3 +83,19 @@
 
 /* Keep the participant sheet mounted beneath its response editor. */
 .response-editor-layer{position:absolute;inset:0;z-index:7}.composer-overlay[inert]{pointer-events:none}
+
+/* Shared reply composer: optional recipients and compact circular reminder. */
+.response-recipients{padding:5px 2px 12px;margin-bottom:12px;border-bottom:1px solid #ebebed;min-height:46px}
+.response-recipients[hidden]{display:none}
+.comment-composer .composer-footer:has(.palm-reminder){gap:10px}
+.comment-composer .composer-footer .palm-reminder{margin:0 0 0 auto;gap:4px;font-size:12px;white-space:nowrap;flex-shrink:0;cursor:pointer}
+.comment-composer .palm-reminder input{appearance:none;-webkit-appearance:none;width:16px;height:16px;margin:0;border:1.5px solid #bbb;border-radius:50%;position:relative;flex-shrink:0;cursor:pointer}
+.comment-composer .palm-reminder input:checked{background:#ff2442;border-color:#ff2442}
+.comment-composer .palm-reminder input:checked:after{content:"";position:absolute;left:4px;top:2px;width:4px;height:7px;border:solid #fff;border-width:0 1.5px 1.5px 0;transform:rotate(45deg)}
+.comment-composer .palm-reminder input:focus-visible{outline:2px solid #ff2442;outline-offset:3px}
+.comment-composer .composer-footer:has(.palm-reminder) .send{margin-left:0}
+.participants-footer .participants-respond{height:36px;min-height:36px;padding:0 12px;line-height:36px;font-size:15px}
+.target-comment{position:relative;background:transparent;border-radius:12px;box-shadow:none;isolation:isolate}
+.target-comment:before{content:"";position:absolute;inset:-6px -6px;background:#f6f6f7;border-radius:12px;z-index:-1;pointer-events:none}
+.target-comment>.comment-swipe .comment-swipe-surface{background:transparent}
+@media(max-width:360px){.comment-composer .composer-footer:has(.palm-reminder){gap:8px}.comment-composer .composer-footer .palm-reminder{font-size:11px}}
