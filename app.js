@@ -152,20 +152,23 @@ function palmGeometry(host,dx=0){
  return {x:(rect.width?rect.left:base.left+dx)-phone.left,y:(rect.width?rect.top:base.top)-phone.top,size:rect.width||(source.classList.contains('small')?24:39)};
 }
 function createPalmMotion(host){
- clearPalmMotion();const layer=document.createElement('div');layer.className='palm-motion-layer';layer.setAttribute('aria-hidden','true');layer.innerHTML=avatar(role,'collision-b')+'<span class="palm-drag-prompt">右滑击掌</span>';document.querySelector('.phone').append(layer);
- activePalmMotion={host,layer,b:layer.querySelector('img'),prompt:layer.querySelector('.palm-drag-prompt')};return activePalmMotion;
+ clearPalmMotion();const layer=document.createElement('div');layer.className='palm-motion-layer';layer.setAttribute('aria-hidden','true');layer.innerHTML=avatar(role,'collision-b')+'<span class="palm-drag-prompt palm-enter-prompt">右滑击掌</span><span class="palm-drag-prompt palm-release-prompt" hidden>松手击掌</span>';document.querySelector('.phone').append(layer);
+ activePalmMotion={host,layer,b:layer.querySelector('img'),prompt:layer.querySelector('.palm-enter-prompt'),releasePrompt:layer.querySelector('.palm-release-prompt')};return activePalmMotion;
 }
 function updatePalmDrag(host,motion,dx){
  const g=palmGeometry(host,dx),base=g.x-dx,entry=g.size+21,travel=entry*Math.min(1,dx/88);
  motion.g=g;motion.base=base;motion.bx=base-entry+travel;const b=motion.b;b.style.left=base+'px';b.style.top=g.y+'px';b.style.width=b.style.height=g.size+'px';b.style.transform=`translateX(${travel-entry}px)`;
- const progress=Math.min(1,dx/88),settle=Math.max(0,Math.min(1,(dx-64)/24));
+ const progress=Math.min(1,dx/88),settled=dx>=88;
  b.style.filter=`blur(${(4*(1-progress)).toFixed(2)}px)`;
- const prompt=motion.prompt,earlyX=Math.max(g.size/2,motion.bx+g.size/2),betweenX=base+(dx+g.size)/2;
- prompt.textContent=dx>=88?'松手击掌':'右滑击掌';prompt.style.left=(earlyX+(betweenX-earlyX)*settle)+'px';prompt.style.top=(g.y+g.size/2-(g.size/2+10)*settle)+'px';prompt.style.setProperty('--entry-glow',1-settle);prompt.dataset.phase=settle===1?'settled':'entering';
+ const prompt=motion.prompt,release=motion.releasePrompt;
+ prompt.hidden=settled;release.hidden=!settled;
+ prompt.style.left=Math.max(g.size/2,motion.bx+g.size/2)+'px';prompt.style.top=(g.y+g.size/2)+'px';prompt.dataset.phase='entering';
+ release.style.left=(base+g.size+8)+'px';release.style.top=(g.y+g.size/2)+'px';release.dataset.phase='settled';
+
 
 }
 function retreatPalmMotion(host,motion){
- if(!motion)return;motion.prompt.style.opacity='0';const g=motion.g||palmGeometry(host);motion.b.style.transition='transform .28s cubic-bezier(.2,.8,.2,1)';motion.b.style.transform=`translateX(${-g.size-21}px)`;
+ if(!motion)return;motion.prompt.hidden=true;motion.releasePrompt.hidden=true;const g=motion.g||palmGeometry(host);motion.b.style.transition='transform .28s cubic-bezier(.2,.8,.2,1)';motion.b.style.transform=`translateX(${-g.size-21}px)`;
  setTimeout(()=>{if(activePalmMotion===motion)clearPalmMotion();},290);
 }
 function animatePalmCollision(id,finish=()=>{},distance=0,motion=null){
@@ -173,7 +176,7 @@ function animatePalmCollision(id,finish=()=>{},distance=0,motion=null){
  const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
  motion??=createPalmMotion(host);const g=palmGeometry(host,distance);
  const base=motion.base??g.x-distance,bstart=motion.bx??base-g.size-21,bhit=base+2,ahit=base+g.size-6;
- motion.prompt.hidden=true;motion.b.style.filter='';const layer=motion.layer;layer.classList.add('palm-collision');host.classList.add('colliding');
+ motion.prompt.hidden=true;motion.releasePrompt.hidden=true;motion.b.style.filter='';const layer=motion.layer;layer.classList.add('palm-collision');host.classList.add('colliding');
  layer.style.setProperty('--b-start',bstart+'px');layer.style.setProperty('--a-start',g.x+'px');layer.style.setProperty('--b-hit',bhit+'px');layer.style.setProperty('--a-hit',ahit+'px');layer.style.setProperty('--a-rest',base+'px');layer.style.setProperty('--b-exit',(base-g.size-21)+'px');host.style.setProperty('--swipe-distance',distance+'px');
  const b=motion.b;b.style.left='0';b.style.top=g.y+'px';b.style.width=b.style.height=g.size+'px';b.style.transform='';b.classList.add('avatar-hit-b');
  layer.insertAdjacentHTML('beforeend',`${avatar(c.author,'collision-a avatar-hit-a')}<span class="collision-hands"><span>✋</span><span>🤚</span></span>`);
