@@ -52,13 +52,12 @@
 .palm-avatar-unit{position:absolute;left:0;top:0;border:0;overflow:visible}.palm-avatar-unit>.avatar{width:100%;height:100%;border:0;box-shadow:none;border-radius:50%;object-fit:cover}.palm-avatar-unit.unit-b{z-index:1}.palm-avatar-unit.unit-a{z-index:2}
 .palm-collision .avatar-hit-b{animation:bound-b-path .56s both}.palm-collision .avatar-hit-a{animation:bound-a-path .56s both}
 /* Outer units translate; the photo and its circular crop deform together. */
-.palm-collision .unit-b>.avatar{transform-origin:100% 50%;animation:avatar-contact-compress .56s both}.palm-collision .unit-a>.avatar{transform-origin:0% 50%;animation:avatar-contact-compress .56s both}
-@keyframes avatar-contact-compress{0%,30%{transform:scale(1,1)}34%,43%{transform:scale(.94,1.04)}54%,100%{transform:scale(1,1)}}
+.palm-collision .palm-avatar-unit>.avatar{transform:none;animation:none}
 @keyframes bound-b-path{0%{transform:translateX(var(--b-start));animation-timing-function:cubic-bezier(.15,.75,.25,1)}34%,43%{transform:translateX(var(--b-hit))}54%,64%{transform:translateX(calc(var(--b-hit) - 4px));animation-timing-function:cubic-bezier(.4,0,.2,1)}100%{transform:translateX(var(--b-exit))}}
 @keyframes bound-a-path{0%{transform:translateX(var(--a-start));animation-timing-function:cubic-bezier(.15,.75,.25,1)}34%,43%{transform:translateX(var(--a-hit))}54%,64%{transform:translateX(calc(var(--a-hit) + 4px));animation-timing-function:cubic-bezier(.4,0,.2,1)}100%{transform:translateX(var(--a-rest))}}
 .palm-contact-svg{position:absolute;z-index:4;pointer-events:none;overflow:visible;animation:palm-contact-visibility .56s both}.palm-contact-svg .contact-hand{position:absolute;left:17%;top:10%;width:66%;height:auto;pointer-events:none;user-select:none;transform-origin:50% 80%}
-.palm-contact-svg .contact-hand-back{z-index:1;animation:svg-hand-back .56s both}
-.palm-contact-svg .contact-hand-palm{z-index:2;animation:svg-hand-palm .56s both}
+.palm-contact-svg .contact-hand-back{z-index:2;animation:svg-hand-palm .56s both}
+.palm-contact-svg .contact-hand-palm{z-index:1;animation:svg-hand-back .56s both}
 @keyframes svg-hand-palm{0%{transform:translate(-60%,-2%) rotate(-14deg);animation-timing-function:cubic-bezier(.15,.75,.25,1)}34%,43%{transform:translate(-12%,-2%) rotate(-7deg) scale(.97,1.02)}54%,64%,100%{transform:translate(-22%,-2%) rotate(-10deg) scale(1)}}
 @keyframes svg-hand-back{0%{transform:translate(60%,2%) rotate(14deg);animation-timing-function:cubic-bezier(.15,.75,.25,1)}34%,43%{transform:translate(12%,2%) rotate(7deg) scale(.97,1.02)}54%,64%,100%{transform:translate(22%,2%) rotate(10deg) scale(1)}}
 @keyframes palm-contact-visibility{0%{opacity:0}8%,59%{opacity:1}78%,100%{opacity:0}}
@@ -120,3 +119,10 @@
 @media(prefers-reduced-motion:reduce){.composer-keyboard-panel,.keyboard-composer-overlay,.keyboard-composer-overlay.is-closing,.keyboard-composer-overlay.is-closing .composer-keyboard-panel{animation:none}}
 
 .participants-sheet .palm-person>span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.participants-sheet .participant-private{flex-shrink:0;background:#fff;font-size:12px;padding:7px 11px;border:1px solid #e6e6e8;white-space:nowrap}.participants-sheet .participant-private:disabled{opacity:.4}
+
+/* Standalone SVG sticker with its comment reference; text is a separate chat message. */
+.palm-dm-symbol>img{display:block;width:20px;height:20px;object-fit:contain}
+.palm-dm-message{gap:8px}
+.palm-dm-play,.chat-line.mine .palm-dm-play{width:176px;height:145px;max-width:100%;padding:0;background:transparent;border-radius:0;color:inherit}
+.palm-dm-play>picture{display:block;width:100%;height:100%}
+.palm-dm-animation{display:block;width:100%;height:100%;object-fit:contain}

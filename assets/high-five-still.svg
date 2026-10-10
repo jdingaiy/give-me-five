@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="403" height="355" fill="none" viewBox="103.3333 61.6667 201.6667 177.5000" role="img" aria-labelledby="title desc"><title id="title">击掌</title><desc id="desc">击掌后停留姿态的静止帧，透明背景。</desc><g transform="translate(235.0 144.0) rotate(11.0) scale(1.0 1.0) translate(-74 -82.5)">
+<path d="M29.6236 123.466L20.4802 117.412L19.5523 135.828L27.9707 146.569L42.2948 153.264L61.2131 157.15L87.3385 152.71L103.251 141.892L102.375 124.797L87.5867 127.31L70.3341 130.241L49.1283 130.802L29.6236 123.466Z" fill="url(#palm_paint0_linear_298_1821)"/>
+<use xlink:href="#palm_stroke0_298_1821" fill="url(#palm_paint1_linear_298_1821)"/>
+<use xlink:href="#palm_stroke0_298_1821" fill="url(#palm_paint2_linear_298_1821)" fill-opacity="0.2"/>
+<path d="M102.783 124.22C102.783 124.22 104.784 133.009 103.743 141.808C102.702 150.607 73.2019 158.633 54.3861 155.774C38.3133 153.332 20.566 144.784 19.2162 133.856C17.8663 122.928 19.3162 113.552 19.3162 113.552" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" stroke="#7B4742"/>
+<path d="M103.381 123.122C114.695 114.752 121.13 108.266 132.68 99.4347C140.355 93.566 138.108 82.7903 132.696 78.6382C126.021 73.5165 117.228 74.1663 109.908 79.7995C112.043 64.6784 112.035 43.6044 100.795 28.4654C90.456 14.539 76.8275 9.52094 58.3377 11.1414C37.3492 12.9808 23.6911 24.135 18.5194 41.135C11.8222 63.1494 14.8926 90.3912 18.5193 111.734" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" stroke="#7B4742"/>
+<path d="M101.741 124.06C90.4877 127.5 76.4877 131 59.4877 129.5C42.4877 128 26.6626 120.435 19.8091 113.469" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" stroke="#7B4742"/>
+<path d="M58.3558 109.989C59.8424 102.834 62.7829 94.6069 67.9152 89.5489C76.0145 81.5669 86.1709 80.8334 94.3084 82.0022" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" stroke="#DB8B7F"/>
+<defs>
+<linearGradient id="palm_paint0_linear_298_1821" x1="18.5857" y1="142.078" x2="102.877" y2="127.754" gradientUnits="userSpaceOnUse">
+<stop stop-color="#E77773"/>
+<stop offset="1" stop-color="#CA344C"/>
+</linearGradient>
+<linearGradient id="palm_paint1_linear_298_1821" x1="62.3913" y1="10.378" x2="82.3272" y2="127.696" gradientUnits="userSpaceOnUse">
+<stop stop-color="#F9E3D2"/>
+<stop offset="1" stop-color="#DA8981"/>
+</linearGradient>
+<linearGradient id="palm_paint2_linear_298_1821" x1="42.0249" y1="-9.4908" x2="68.8363" y2="46.8133" gradientUnits="userSpaceOnUse">
+<stop stop-color="white"/>
+<stop offset="1" stop-color="white" stop-opacity="0"/>
+</linearGradient>
+<path id="palm_stroke0_298_1821" d="M14.7198 89.4823L20.2192 112.892L26.5496 119.5L39.334 126.887L58.9128 131.675L80.6019 127.989L102.784 124.22L111.396 118.192L125.987 105.569L137.537 92.956L135.862 83.0973L127.37 74.9043L120.961 75.9932L110.61 77.7523L110.99 68.0515L109.276 46.0273L102.485 29.9377L86.7367 14.8629L60.666 10.6712L33.5496 19L21.7822 35.5368L14.7198 59.5L14.7198 89.4823Z"/>
+</defs>
+</g><g transform="translate(176.0 157.0) rotate(-6.0) scale(1.0 1.0) translate(-74 -82.5)">
+<path d="M117.726 123.601L126.869 117.547L127.797 135.963L119.379 146.704L105.055 153.399L86.1364 157.285L60.0109 152.845L44.0984 142.027L44.9747 124.932L59.7627 127.445L77.0154 130.376L98.2212 130.937L117.726 123.601Z" fill="url(#back_paint0_linear_298_1820)"/>
+<use xlink:href="#back_stroke0_298_1820" fill="url(#back_paint1_linear_298_1820)"/>
+<use xlink:href="#back_stroke0_298_1820" fill="url(#back_paint2_linear_298_1820)" fill-opacity="0.2"/>
+<use xlink:href="#back_stroke0_298_1820" fill="url(#back_paint3_radial_298_1820)"/>
+<path d="M44.5666 124.355C44.5666 124.355 42.5658 133.144 43.6065 141.943C44.6472 150.742 74.1475 158.768 92.9633 155.909C109.036 153.467 126.783 144.92 128.133 133.991C129.483 123.063 128.033 113.688 128.033 113.688" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" stroke="#7B4742"/>
+<path d="M43.6123 123.122C32.2989 114.752 25.864 108.266 14.3137 99.4348C6.63841 93.566 8.88585 82.7903 14.2976 78.6382C20.9731 73.5166 29.7655 74.1663 37.0861 79.7996C34.951 64.6785 34.9587 43.6044 46.1984 28.4654C56.5377 14.5391 70.1662 9.52097 88.6561 11.1414C109.645 12.9808 123.303 24.1351 128.474 41.1351C135.171 63.1495 132.101 90.3912 128.474 111.734" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" stroke="#7B4742"/>
+<path d="M45.6081 124.195C56.2999 128.135 74.2999 130.842 90.7999 129.635C107.3 128.428 120.687 120.57 127.54 113.604" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" stroke="#7B4742"/>
+<defs>
+<linearGradient id="back_paint0_linear_298_1820" x1="128.764" y1="142.213" x2="44.4721" y2="127.889" gradientUnits="userSpaceOnUse">
+<stop stop-color="#CA344C"/>
+<stop offset="1" stop-color="#E77773"/>
+</linearGradient>
+<linearGradient id="back_paint1_linear_298_1820" x1="84.9581" y1="10.5131" x2="117.8" y2="123.135" gradientUnits="userSpaceOnUse">
+<stop stop-color="#F9E3D2"/>
+<stop offset="1" stop-color="#DA8981"/>
+</linearGradient>
+<linearGradient id="back_paint2_linear_298_1820" x1="105.325" y1="-9.35576" x2="78.5131" y2="46.9483" gradientUnits="userSpaceOnUse">
+<stop stop-color="white"/>
+<stop offset="1" stop-color="white" stop-opacity="0"/>
+</linearGradient>
+<radialGradient id="back_paint3_radial_298_1820" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(116.3 110.635) rotate(173.059) scale(57.9245 47.8772)">
+<stop stop-color="#DF8D85"/>
+<stop offset="1" stop-color="#DF8D85" stop-opacity="0"/>
+</radialGradient>
+<path id="back_stroke0_298_1820" d="M132.63 89.6174L127.13 113.027L120.8 119.635L108.015 127.022L88.4366 131.81L66.7475 128.124L44.5655 124.355L35.9537 118.327L21.3621 105.704L9.81197 93.091L11.4873 83.2324L19.9798 75.0393L26.388 76.1283L36.7396 77.8873L36.3594 68.1865L38.0733 46.1624L44.8647 30.0727L60.6127 14.9979L86.6834 10.8063L113.8 19.135L125.567 35.6718L132.63 59.635L132.63 89.6174Z"/>
+</defs>
+</g><g opacity="0"><g stroke="#CA344C" stroke-width="5" stroke-linecap="round" fill="none"><path d="M197 48 L196 36 M176 51 L168 40 M217 47 L224 35"/></g></g></svg>
