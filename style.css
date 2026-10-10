@@ -63,3 +63,6 @@
 .palm-owner-state,.palm-notified-state{color:#999;font-size:12px;line-height:20px}.palm-notified-state{display:block;margin-top:5px}.participants-respond{display:block;width:100%;padding:12px;border-radius:20px;color:#fff;background:#ff2442;margin-top:12px}
 
 .comment-text{position:relative}.palm-gesture-hint{left:0;top:auto;bottom:calc(100% + 8px);transform:none;transform-origin:28px 100%}.palm-gesture-hint:before{left:28px;top:auto;bottom:-5px}.palm-gesture-hint.is-visible{animation:palm-gesture-hint-enter .42s both cubic-bezier(.18,.75,.28,1)}@keyframes palm-gesture-hint-enter{0%{opacity:0;transform:translateY(6px) scale(.88)}70%{opacity:1;transform:translateY(0) scale(1.035)}100%{opacity:1;transform:translateY(0) scale(1)}}@media(prefers-reduced-motion:reduce){.palm-gesture-hint.is-visible{animation:none}}
+
+/* Official Phosphor status symbols. */
+.battery{display:inline-flex;position:relative;align-items:center;justify-content:center;width:27px;height:18px;min-width:27px;background:none;border:0;border-radius:0;line-height:1;isolation:auto}.battery:before,.battery:after{content:none}.battery>svg{display:block;overflow:visible}.battery>span{position:absolute;font-size:7px;left:6px;top:6px;line-height:7px;background:#fff;color:#333;text-shadow:none;padding:0 1px}.palm-dm-symbol{display:inline-flex;align-items:center}

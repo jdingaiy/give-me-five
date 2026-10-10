@@ -2,7 +2,7 @@ const {JSDOM}=require('jsdom'),fs=require('node:fs'),vm=require('node:vm'),asser
 const root=require('node:path').resolve(__dirname,fs.existsSync(require('node:path').resolve(__dirname,'../dist/index.html'))?'../dist':'..')+'/';
 const dom=new JSDOM(fs.readFileSync(root+'index.html','utf8'),{url:'https://prototype.test/#note',runScripts:'outside-only',pretendToBeVisual:true});
 const w=dom.window,d=w.document;w.structuredClone=structuredClone;w.HTMLElement.prototype.scrollIntoView=function(){this.dataset.located='true'};
-const context=dom.getInternalVMContext();for(const file of ['xhs-icons.js','app.js'])vm.runInContext(fs.readFileSync(root+file,'utf8'),context);
+const context=dom.getInternalVMContext();for(const file of ['phosphor-icons.js','app.js'])vm.runInContext(fs.readFileSync(root+file,'utf8'),context);
 const ev=s=>vm.runInContext(s,context),click=s=>{const el=d.querySelector(s);assert(el,'missing '+s);el.click();},state=()=>JSON.parse(ev('JSON.stringify(data)'));
 const pointer=(el,type,x=0,y=0)=>el.dispatchEvent(new w.MouseEvent(type,{bubbles:true,cancelable:true,button:0,clientX:x,clientY:y}));
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));

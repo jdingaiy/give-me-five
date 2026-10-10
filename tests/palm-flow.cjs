@@ -3,7 +3,7 @@ const fs=require('fs'),assert=require('node:assert/strict'),vm=require('node:vm'
 const root=require('node:path').resolve(__dirname,fs.existsSync(require('node:path').resolve(__dirname,'../dist/index.html'))?'../dist':'..')+'/';
 const dom=new JSDOM(fs.readFileSync(root+'index.html','utf8'),{url:'https://prototype.test/#note',runScripts:'outside-only',pretendToBeVisual:true});
 const w=dom.window,d=w.document;w.structuredClone=structuredClone;w.HTMLElement.prototype.scrollIntoView=function(){this.dataset.located='true'};
-const context=dom.getInternalVMContext();vm.runInContext(fs.readFileSync(root+'xhs-icons.js','utf8'),context);vm.runInContext(fs.readFileSync(root+'app.js','utf8'),context);
+const context=dom.getInternalVMContext();vm.runInContext(fs.readFileSync(root+'phosphor-icons.js','utf8'),context);vm.runInContext(fs.readFileSync(root+'app.js','utf8'),context);
 const ev=s=>vm.runInContext(s,context),click=s=>{const n=d.querySelector(s);assert(n,'missing '+s);n.click();},submit=()=>d.querySelector('form.composer').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
 const pause=ms=>new Promise(r=>setTimeout(r,ms));const palmAction=async id=>{ev(`openPalmMenu('${id}')`);click('#menu-palm');await pause(580);};
 const state=()=>JSON.parse(ev('JSON.stringify(data)')),last=()=>state().comments.at(-1),messages=kind=>state().notifications.filter(n=>n.kind===kind);

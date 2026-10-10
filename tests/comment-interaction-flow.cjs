@@ -1,7 +1,7 @@
 const {JSDOM}=require('jsdom'),fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
 const root=require('node:path').resolve(__dirname,fs.existsSync(require('node:path').resolve(__dirname,'../dist/index.html'))?'../dist':'..')+'/';
 const dom=new JSDOM(fs.readFileSync(root+'index.html','utf8'),{url:'https://prototype.test/#note',runScripts:'outside-only',pretendToBeVisual:true});
-const w=dom.window,d=w.document;w.structuredClone=structuredClone;w.HTMLElement.prototype.scrollIntoView=function(){};const context=dom.getInternalVMContext();vm.runInContext(fs.readFileSync(root+'xhs-icons.js','utf8'),context);vm.runInContext(fs.readFileSync(root+'app.js','utf8'),context);
+const w=dom.window,d=w.document;w.structuredClone=structuredClone;w.HTMLElement.prototype.scrollIntoView=function(){};const context=dom.getInternalVMContext();vm.runInContext(fs.readFileSync(root+'phosphor-icons.js','utf8'),context);vm.runInContext(fs.readFileSync(root+'app.js','utf8'),context);
 const ev=s=>vm.runInContext(s,context),click=s=>{const n=d.querySelector(s);assert(n,'missing '+s);n.click();};
 const pointer=(el,type,x=5,y=5)=>el.dispatchEvent(new w.MouseEvent(type,{bubbles:true,button:0,clientX:x,clientY:y}));
 const pause=()=>new Promise(resolve=>setTimeout(resolve,550));
