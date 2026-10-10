@@ -165,7 +165,23 @@ function togglePalm(id,options={}){
 }
 const PALM_SWIPE_THRESHOLD=88;
 let activePalmMotion;
-function clearPalmMotion(){if(activePalmMotion){activePalmMotion.layer.remove();activePalmMotion.host?.classList.remove('colliding','swipe-collision');activePalmMotion=null;}}
+function clearPalmMotion(){if(activePalmMotion){cancelAnimationFrame(activePalmMotion.effectFrame);activePalmMotion.effectPlayer?.destroy();activePalmMotion.layer.remove();activePalmMotion.host?.classList.remove('colliding','swipe-collision');activePalmMotion=null;}}
+function mountPalmContact(motion,g,contactX,reduced){
+ if(reduced)return;
+ const size=g.size*1.9,effect=document.createElement('div');effect.className='palm-contact-lottie';effect.style.cssText=`left:${contactX-size/2}px;top:${g.y-size+8}px;width:${size}px;height:${size}px`;
+ motion.layer.append(effect);
+ const rays=document.createElement('div');rays.className='palm-contact-rays';rays.style.left=contactX+'px';rays.style.top=(g.y-size*.45)+'px';rays.innerHTML='<i></i><i></i><i></i>';motion.layer.append(rays);
+ if(!window.lottie||typeof HIGH_FIVE_ANIMATION==='undefined')return;
+ const animationData=structuredClone(HIGH_FIVE_ANIMATION);animationData.layers=animationData.layers.filter(layer=>layer.nm!=='Background');
+ const player=motion.effectPlayer=window.lottie.loadAnimation({container:effect,renderer:'svg',loop:false,autoplay:false,animationData,rendererSettings:{preserveAspectRatio:'xMidYMid meet'}});
+ const start=performance.now();
+ const tick=now=>{if(activePalmMotion!==motion)return;const elapsed=now-start;
+  // First contact is frame 15.3. Hold it with compression, then use only the first recoil.
+  const frame=elapsed<190?15.3*elapsed/190:elapsed<241?15.3:Math.min(27.6,15.3+(elapsed-241)/89*12.3);
+  if(player.isLoaded)player.goToAndStop(frame,true);
+  if(elapsed<560)motion.effectFrame=requestAnimationFrame(tick);
+ };motion.effectFrame=requestAnimationFrame(tick);
+}
 function palmGeometry(host,dx=0){
  const phone=document.querySelector('.phone').getBoundingClientRect(),source=host.querySelector('.comment-swipe-surface>.avatar'),rect=source.getBoundingClientRect(),base=host.getBoundingClientRect();
  return {x:(rect.width?rect.left:base.left+dx)-phone.left,y:(rect.width?rect.top:base.top)-phone.top,size:rect.width||(source.classList.contains('small')?24:39)};
@@ -203,9 +219,9 @@ function animatePalmCollision(id,finish=()=>{},distance=0,motion=null){
  for(const [key,value] of Object.entries({'b-start':bstart,'a-start':g.x,'b-hit':bhit,'a-hit':ahit,'a-rest':base,'b-exit':base-g.size-21}))layer.style.setProperty('--'+key,value+'px');
  host.style.setProperty('--swipe-distance',distance+'px');layer.style.setProperty('--avatar-size',g.size+'px');
  const b=motion.b;b.style.left='0';b.style.top=g.y+'px';b.style.width=b.style.height=g.size+'px';b.style.transform='';b.classList.add('avatar-hit-b');
- b.insertAdjacentHTML('beforeend','<span class="bound-palm palm-b" aria-hidden="true">✋</span>');
- layer.insertAdjacentHTML('beforeend',`<div class="palm-avatar-unit unit-a avatar-hit-a">${avatar(c.author,'collision-a')}<span class="bound-palm palm-a" aria-hidden="true">🤚</span></div>`);
+ layer.insertAdjacentHTML('beforeend',`<div class="palm-avatar-unit unit-a avatar-hit-a">${avatar(c.author,'collision-a')}</div>`);
  const a=layer.querySelector('.unit-a');a.style.top=g.y+'px';a.style.width=a.style.height=g.size+'px';
+ mountPalmContact(motion,g,bhit+g.size-1,reduced);
  setTimeout(()=>{if(activePalmMotion!==motion||!host.isConnected)return;const row=host.querySelector('.palm-row');if(row){row.outerHTML=renderPalm(c);const control=host.querySelector('.palm-mark[data-action="palm"]');if(control)control.onclick=e=>{e.stopPropagation();togglePalm(id,{source:'tap'});};}},reduced?10:350);
  setTimeout(()=>{if(activePalmMotion===motion)clearPalmMotion();host.classList.remove('colliding','swipe-collision');finish();},reduced?20:560);
 }

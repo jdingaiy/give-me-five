@@ -51,12 +51,17 @@
 .palm-motion-layer{z-index:0}.palm-motion-layer.palm-collision{z-index:5}
 .palm-avatar-unit{position:absolute;left:0;top:0;border:0;overflow:visible}.palm-avatar-unit>.avatar{width:100%;height:100%;border:0;box-shadow:none;border-radius:50%;object-fit:cover}.palm-avatar-unit.unit-b{z-index:1}.palm-avatar-unit.unit-a{z-index:2}
 .palm-collision .avatar-hit-b{animation:bound-b-path .56s both}.palm-collision .avatar-hit-a{animation:bound-a-path .56s both}
-.bound-palm{position:absolute;top:50%;width:20px;height:24px;line-height:24px;font-size:20px;transform:translateY(-50%);z-index:3;animation:bound-hand-contact .56s both;pointer-events:none}.palm-b{right:-2px}.palm-a{left:-2px}
-@keyframes bound-b-path{0%{transform:translateX(var(--b-start));animation-timing-function:cubic-bezier(.15,.75,.25,1)}34%,43%{transform:translateX(var(--b-hit)) scale(1.025)}54%{transform:translateX(calc(var(--b-hit) - 4px)) scale(.985)}64%{transform:translateX(var(--b-hit));animation-timing-function:cubic-bezier(.4,0,.2,1)}100%{transform:translateX(var(--b-exit))}}
-@keyframes bound-a-path{0%{transform:translateX(var(--a-start));animation-timing-function:cubic-bezier(.15,.75,.25,1)}34%,43%{transform:translateX(var(--a-hit)) scale(1.025)}54%{transform:translateX(calc(var(--a-hit) + 4px)) scale(.985)}64%{transform:translateX(var(--a-hit));animation-timing-function:cubic-bezier(.4,0,.2,1)}90%{transform:translateX(calc(var(--a-rest) - 2px))}100%{transform:translateX(var(--a-rest))}}
-@keyframes bound-hand-contact{0%,10%{opacity:0}24%,54%{opacity:1}66%,100%{opacity:0}}
+/* Outer units translate; the photo and its circular crop deform together. */
+.palm-collision .unit-b>.avatar{transform-origin:100% 50%;animation:avatar-contact-compress .56s both}.palm-collision .unit-a>.avatar{transform-origin:0% 50%;animation:avatar-contact-compress .56s both}
+@keyframes avatar-contact-compress{0%,30%{transform:scale(1,1)}34%,43%{transform:scale(.94,1.04)}54%,100%{transform:scale(1,1)}}
+@keyframes bound-b-path{0%{transform:translateX(var(--b-start));animation-timing-function:cubic-bezier(.15,.75,.25,1)}34%,43%{transform:translateX(var(--b-hit))}54%,64%{transform:translateX(calc(var(--b-hit) - 4px));animation-timing-function:cubic-bezier(.4,0,.2,1)}100%{transform:translateX(var(--b-exit))}}
+@keyframes bound-a-path{0%{transform:translateX(var(--a-start));animation-timing-function:cubic-bezier(.15,.75,.25,1)}34%,43%{transform:translateX(var(--a-hit))}54%,64%{transform:translateX(calc(var(--a-hit) + 4px));animation-timing-function:cubic-bezier(.4,0,.2,1)}100%{transform:translateX(var(--a-rest))}}
+.palm-contact-lottie{position:absolute;z-index:4;pointer-events:none;overflow:visible;animation:palm-contact-visibility .56s both}.palm-contact-lottie>svg{display:block;width:100%;height:100%;overflow:visible}
+@keyframes palm-contact-visibility{0%{opacity:0}8%,59%{opacity:1}78%,100%{opacity:0}}
+.palm-contact-rays{position:absolute;width:0;height:0;z-index:5;pointer-events:none;animation:palm-contact-rays .56s both}.palm-contact-rays i{position:absolute;bottom:0;left:-1px;height:6px;width:1.5px;border-radius:2px;background:#e5ab60;transform:translateY(-8px)}.palm-contact-rays i:first-child{transform:translate(-8px,-4px) rotate(-40deg)}.palm-contact-rays i:last-child{transform:translate(8px,-4px) rotate(40deg)}
+@keyframes palm-contact-rays{0%,30%{opacity:0;transform:scale(.8)}34%,43%{opacity:.85;transform:scale(1)}54%,100%{opacity:0;transform:scale(1.05)}}
 .colliding.swipe-collision .comment-swipe-surface{animation:comment-spring-home .56s both cubic-bezier(.22,.7,.28,1)}
-@keyframes comment-spring-home{0%,64%{transform:translateX(var(--swipe-distance))}90%{transform:translateX(-2px)}100%{transform:translateX(0)}}
+@keyframes comment-spring-home{0%,64%{transform:translateX(var(--swipe-distance))}100%{transform:translateX(0)}}
 .palm-swipe-hint{position:absolute;left:12px;top:calc(100% + 8px);bottom:auto;transform:translateX(-50%);transform-origin:50% 0;margin:0;font-size:14px;line-height:21px;white-space:nowrap;pointer-events:none;background:#323234;color:#fff;padding:7px 10px;border-radius:8px;box-shadow:0 2px 12px #00000014;z-index:4;opacity:0;transition:opacity .18s ease-out}.palm-swipe-hint:before{content:"";position:absolute;left:50%;top:-5px;width:10px;height:10px;background:#323234;transform:translateX(-50%) rotate(45deg)}.palm-swipe-hint.is-visible{opacity:1;animation:palm-hint-enter .42s both cubic-bezier(.18,.75,.28,1)}@keyframes palm-hint-enter{0%{opacity:0;transform:translate(-50%,6px) scale(.88)}70%{opacity:1;transform:translate(-50%,0) scale(1.035)}100%{opacity:1;transform:translate(-50%,0) scale(1)}}@media(prefers-reduced-motion:reduce){.palm-swipe-hint{transition:none}.palm-swipe-hint.is-visible{animation:none}}
 @media(prefers-reduced-motion:reduce){.colliding.swipe-collision .comment-swipe-surface{animation:none}.palm-avatar-unit,.bound-palm{animation:none!important}}
 
@@ -68,3 +73,5 @@
 
 /* Fixed half-sheet top; only the action cards scroll. */
 .comment-actions-sheet{display:flex;flex-direction:column;padding:0;overflow:hidden}.sheet-fixed-top{flex:0 0 auto;background:#f5f5f6;padding:8px 15px 0;position:relative;z-index:1}.sheet-fixed-top .sheet-handle{margin:0 auto 18px}.sheet-fixed-top .sheet-share-people{margin-bottom:27px}.sheet-scroll-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;padding:0 15px 25px}.chat-input [aria-label="语音消息"]>svg{transform:rotate(90deg)}
+
+@media(prefers-reduced-motion:reduce){.palm-collision .palm-avatar-unit>.avatar{animation:none!important}.palm-contact-lottie,.palm-contact-rays{display:none}}

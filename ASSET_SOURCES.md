@@ -7,3 +7,5 @@
 - Avatar artwork, note photos and animated hand emoji are content, separate from interface icons.
 
 - Updated selections: hands-clapping regular/fill for high-five; chat-teardrop for 问点点; wifi-medium rotated clockwise 90 degrees for private chat voice.
+
+- High-five motion: user supplied `pdjWAaVoEn(1).json`, embedded unchanged in `dist/assets/high-five-data.js`; renderer omits the Background layer and plays the first contact/recoil only. Local Lottie SVG player v5.12.2: https://github.com/airbnb/lottie-web (MIT, `dist/vendor/LOTTIE-LICENSE.txt`). Avatar translation and photo compression use the existing CSS animation system.
