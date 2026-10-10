@@ -57,7 +57,7 @@
 @keyframes bound-hand-contact{0%,10%{opacity:0}24%,54%{opacity:1}66%,100%{opacity:0}}
 .colliding.swipe-collision .comment-swipe-surface{animation:comment-spring-home .56s both cubic-bezier(.22,.7,.28,1)}
 @keyframes comment-spring-home{0%,64%{transform:translateX(var(--swipe-distance))}90%{transform:translateX(-2px)}100%{transform:translateX(0)}}
-.palm-swipe-hint{position:absolute;left:0;bottom:calc(100% + 3px);margin:0;font-size:11px;line-height:20px;white-space:nowrap;pointer-events:none;background:#fff;color:#999;padding:2px 5px;border-radius:4px;box-shadow:0 1px 5px #0001}
+.palm-swipe-hint{position:absolute;left:12px;top:calc(100% + 8px);bottom:auto;transform:translateX(-50%);margin:0;font-size:14px;line-height:21px;white-space:nowrap;pointer-events:none;background:#fff;color:#888;padding:7px 10px;border-radius:8px;box-shadow:0 2px 12px #00000014;z-index:4;opacity:0;transition:opacity .28s ease-out}.palm-swipe-hint:before{content:"";position:absolute;left:50%;top:-5px;width:10px;height:10px;background:#fff;transform:translateX(-50%) rotate(45deg)}.palm-swipe-hint.is-visible{opacity:1}@media(prefers-reduced-motion:reduce){.palm-swipe-hint{transition:none}}
 @media(prefers-reduced-motion:reduce){.colliding.swipe-collision .comment-swipe-surface{animation:none}.palm-avatar-unit,.bound-palm{animation:none!important}}
 
 .palm-owner-state,.palm-notified-state{color:#999;font-size:12px;line-height:20px}.palm-notified-state{display:block;margin-top:5px}.participants-respond{display:block;width:100%;padding:12px;border-radius:20px;color:#fff;background:#ff2442;margin-top:12px}
