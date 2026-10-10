@@ -161,9 +161,11 @@ function updatePalmDrag(host,motion,dx){
  const progress=Math.min(1,dx/88),settled=dx>=88;
  b.style.filter=`blur(${(4*(1-progress)).toFixed(2)}px)`;
  const prompt=motion.prompt,release=motion.releasePrompt;
- prompt.hidden=settled;release.hidden=!settled;
- prompt.style.left=Math.max(g.size/2,motion.bx+g.size/2)+'px';prompt.style.top=(g.y+g.size/2)+'px';prompt.dataset.phase='entering';
- release.style.left=(base+g.size+8)+'px';release.style.top=(g.y+g.size/2)+'px';release.dataset.phase='settled';
+ const position=motion.promptPosition??={enterX:Math.max(24,base+g.size/2),releaseX:base+g.size+8,y:g.y+g.size/2};
+ // Wait for space beside the moving author avatar; both prompts retain their own anchors.
+ prompt.hidden=settled||g.x<position.enterX+(prompt.offsetWidth||44)/2+8;release.hidden=!settled;
+ prompt.style.left=position.enterX+'px';prompt.style.top=position.y+'px';prompt.dataset.phase='entering';
+ release.style.left=position.releaseX+'px';release.style.top=position.y+'px';release.dataset.phase='settled';
 
 
 }
