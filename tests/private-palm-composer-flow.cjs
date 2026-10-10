@@ -13,6 +13,8 @@ const sheet=d.querySelector('.participants-sheet'),notifications=ev('data.notifi
 d.querySelector('[data-participant-private="qing"]').click();
 assert.equal(dm().length,0);assert(sheet.isConnected);assert(sheet.closest('.composer-overlay').inert);
 assert.equal(d.querySelector('#private-palm-text').value,'看到你也有同感，找到同好了～');
+assert.equal(d.querySelector('.private-palm-heading span').textContent,'私信回应阿青的击掌');
+assert.equal(d.querySelector('#private-palm-text').tagName,'INPUT');
 const text=d.querySelector('#private-palm-text');text.value='  ';text.dispatchEvent(new w.Event('input'));assert(d.querySelector('#send-private-palm').disabled);
 text.value='原来你也喜欢一个人爬！周末交流一下～';text.dispatchEvent(new w.Event('input'));
 d.querySelector('.response-editor-layer .composer-overlay').click();
