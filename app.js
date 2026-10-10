@@ -119,13 +119,14 @@ function publishComment(text,options={}){
 }
 
 function palmHistory(c){return [...new Set([...(c.palm?.history||[]),...(c.palm?.historyParticipants||[]),...(c.palm?.participants||[])])];}
+function palmStatusIcon(filled=false){return `<svg class="palm-status-icon" data-filled="${filled}" width="18" height="18" viewBox="0 0 24 24" fill="${filled?'currentColor':'none'}" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 12V5a1.5 1.5 0 0 1 3 0V3a1.5 1.5 0 0 1 3 0v2a1.5 1.5 0 0 1 3 0v4a1.5 1.5 0 0 1 3 0v7c0 4-2 6-6 6h-1c-2 0-3.6-1-4.7-2.6L4.2 14a1.6 1.6 0 0 1 2.5-2l1.3 1.3Z"/>${filled?'':'<path d="M11 5v6m3-6v6m3-2v3"/>'}</svg>`;}
 function renderPalm(c){
  const p=c.palm,own=c.author===role,joined=p.participants.includes(role),closed=p.status!=='open';
  const people=closed?palmHistory(c):p.participants,count=people.length;
  if(closed&&!count)return '';
  const stack=count?`<span class="palm-avatar-stack" aria-hidden="true">${people.slice(0,3).map(person=>avatar(person,'palm-avatar')).join('')}</span>`:'';
  const label=closed?`${count}人曾击掌`:count?`${count}人击掌`:'击掌评论';
- return `<div class="palm-row" id="palm-${c.id}">${!own&&(joined||!closed)?`<button class="palm-mark ${joined?'palm-cancel':'palm-join'}" data-action="palm" data-id="${c.id}" aria-label="${joined?'取消击掌':'击掌'}" aria-pressed="${joined}"><span aria-hidden="true">${joined?'🙌':'✋'}</span></button>`:`<span class="palm-mark" aria-hidden="true">${own?menuGlyph('hand',15):'✋'}</span>`}${own?`<button class="palm-count" data-action="participants" data-id="${c.id}" ${count?'':'disabled'}>${stack}<span>${label}</span></button><button class="palm-respond" data-action="respond" data-id="${c.id}">回应大家</button>`:`<span class="palm-status ${joined?'joined':''}">${stack}${joined?`<span>已击掌</span><span> · ${count}人${closed?'曾击掌':''}</span>`:`<span>${label}</span>`}</span>`}</div>`;
+ return `<div class="palm-row" id="palm-${c.id}">${!own&&(joined||!closed)?`<button class="palm-mark ${joined?'palm-cancel':'palm-join'}" data-action="palm" data-id="${c.id}" aria-label="${joined?'取消击掌':'击掌'}" aria-pressed="${joined}">${palmStatusIcon(joined)}</button>`:`<span class="palm-mark" aria-hidden="true">${palmStatusIcon()}</span>`}${own?`<button class="palm-count" data-action="participants" data-id="${c.id}" ${count?'':'disabled'}>${stack}<span>${label}</span></button><button class="palm-respond" data-action="respond" data-id="${c.id}">回应大家</button>`:`<span class="palm-status ${joined?'joined':''}">${stack}${joined?`<span>已击掌</span><span> · ${count}人${closed?'曾击掌':''}</span>`:`<span>${label}</span>`}</span>`}</div>`;
 }
 function canJoinPalm(c){return !!c?.palm&&c.author!==role&&c.palm.status==='open'&&!c.palm.participants.includes(role);}
 function togglePalm(id,options={}){

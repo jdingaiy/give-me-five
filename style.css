@@ -51,3 +51,5 @@
 
 /* Palm emoji taps have no button backing in any participation state. */
 .palm-mark.palm-join,.palm-mark.palm-cancel,.palm-mark.palm-join:hover,.palm-mark.palm-cancel:hover,.palm-mark.palm-join:active,.palm-mark.palm-cancel:active{background:transparent;border-radius:0;padding:0;box-shadow:none}
+
+.palm-mark .palm-status-icon{width:18px;height:18px;flex-shrink:0}.palm-mark.palm-join{color:#999}.palm-mark.palm-cancel{color:#777}
