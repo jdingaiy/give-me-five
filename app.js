@@ -3,8 +3,8 @@ const PEOPLE={cheng:{name:'阿橙',avatar:'cheng'},lin:{name:'小林',avatar:'li
 const NOTE={id:'camera-note',author:'cheng',title:'终于入手新相机！带它记录日常 📷',text:'纠结了好久，终于把这台小相机带回家啦。\n轻便、好带，直出的颜色也很喜欢。今天带它去咖啡店坐了一会儿，慢慢找回认真拍照的感觉。\n大家最近都在拍什么？欢迎来评论区聊聊～',tags:'#我的新相机 #摄影日常 #相机分享',image:'assets/camera.jpg'};
 const SEED={version:1,comments:[
  {id:'c1',author:'cheng',text:'最近在练习拍日常，欢迎大家在评论区交流～',time:'昨天',place:'上海',pinned:true,baseLikes:12,likedBy:[]},
- {id:'c2',author:'lin',text:'刚入手同款，周末准备去试拍！拍完回来分享样片 📷',time:'昨天',place:'浙江',baseLikes:8,likedBy:['qing','cheng']},
- {id:'r1',author:'qing',text:'我对这台也很感兴趣，想看看逆光的人像表现，蹲你的样片！',parent:'c2',replyTo:'c2',time:'昨天',place:'上海',baseLikes:3,likedBy:['lin']},
+ {id:'c2',author:'lin',text:'我还挺喜欢一个人去攀岩的，不用迁就节奏，有没有同感的？',time:'昨天',place:'浙江',baseLikes:8,likedBy:['qing','cheng']},
+ {id:'r1',author:'qing',text:'我也是！一个人去反而更专注，累了就坐着看别人爬。',parent:'c2',replyTo:'c2',time:'昨天',place:'上海',baseLikes:3,likedBy:['lin']},
  {id:'r2',author:'lin',text:'好呀，我准备去公园拍一组，到时候回来发～',parent:'c2',replyTo:'r1',time:'昨天',place:'浙江',baseLikes:2,likedBy:['qing']},
  {id:'r3',author:'qing',text:'太好了！我最近也在纠结要不要入手，等你分享。',parent:'c2',replyTo:'r2',time:'2小时前',place:'上海',baseLikes:1,likedBy:[]},
  {id:'c3',author:'qing',text:'这个大小看起来很适合随身带，想问问日常拍照续航怎么样？',time:'昨天',place:'上海',baseLikes:5,likedBy:['lin','cheng']},
@@ -32,12 +32,13 @@ const SEED={version:1,comments:[
  {id:'m3',sender:'qing',text:'好呀，我很想看看逆光的人像效果～',time:'昨天 19:32'}
 ],'cheng-lin':[{id:'m4',sender:'lin',text:'你好，想问问你平时用什么模式拍日常？',time:'昨天 18:55'},{id:'m5',sender:'cheng',text:'大多用光圈优先，也会试试自动模式。先多拍，再找自己喜欢的感觉～',time:'昨天 19:02'}],
 'cheng-qing':[{id:'m6',sender:'qing',text:'谢谢你分享新相机的使用感受！',time:'昨天 20:20'},{id:'m7',sender:'cheng',text:'不客气，一起记录生活 📷',time:'昨天 20:22'}]},noteLikes:[],noteSaves:[],follows:[]};
-const MULTI_PALM_DEMO={id:'demo-multi-palm',author:'xia',text:'周末带相机去海边试拍，回来分享逆光样片，想看的可以击掌～',time:'1小时前',place:'福建',baseLikes:6,likedBy:[],palm:{status:'open',participants:['cheng','mei','zhou'],history:['cheng','mei','zhou']}};
+const MULTI_PALM_DEMO={id:'demo-multi-palm',author:'xia',text:'有没有也喜欢一个人去攀岩的？',time:'1小时前',place:'福建',baseLikes:6,likedBy:[],palm:{status:'open',participants:['cheng','mei','zhou'],history:['cheng','mei','zhou']}};
 SEED.comments.push(structuredClone(MULTI_PALM_DEMO));
 const STORAGE='rednote-community-base-v1';
 let data=structuredClone(SEED);
 try{const saved=JSON.parse(localStorage.getItem(STORAGE));if(saved?.version===1&&Array.isArray(saved.comments)&&Array.isArray(saved.notifications)&&saved.chats)data=saved;}catch{}
 if(!data.comments.some(c=>c.id===MULTI_PALM_DEMO.id))data.comments.push(structuredClone(MULTI_PALM_DEMO));
+for(const c of data.comments){if(c.id==='r1'&&c.text==='我对这台也很感兴趣，想看看逆光的人像表现，蹲你的样片！')c.text=SEED.comments.find(x=>x.id==='r1').text;if(c.id==='demo-multi-palm'&&c.text==='周末带相机去海边试拍，回来分享逆光样片，想看的可以击掌～')c.text=MULTI_PALM_DEMO.text;if(c.id==='c2'&&c.text==='刚入手同款，周末准备去试拍！拍完回来分享样片 📷')c.text=SEED.comments.find(x=>x.id==='c2').text;}
 let role='lin',page=readRoute(),chatPeer=page.peer||'qing',replyTarget=null,toastTimer,uid=0;
 const scrollPositions={},expanded=new Set(),drafts=new Map();
 const app=document.getElementById('app');
@@ -73,7 +74,7 @@ function renderNotifications(kind){
  const list=data.notifications.filter(n=>n.recipient===role&&(kind==='like'?['like','palm'].includes(n.kind):['reply','palm-response'].includes(n.kind)));
  return `<header class="topbar bordered"><button class="back" data-action="back" aria-label="返回消息">${icon('back',25)}</button><span class="title">${kind==='like'?'收到的赞和收藏':'收到的评论和@'}</span></header><div class="scroll"><div class="notification-list">${list.map(n=>{
  const c=findComment(n.commentId),ref=findComment(n.refId),deleted=!c,liked=c?.likedBy.includes(role),actors=n.actors||[n.actor];
- const description=n.kind==='palm'?`${PEOPLE[n.actor].name}${actors.length>1?'等'+actors.length+'人':''}向你的评论击了个掌`:n.kind==='palm-response'?`${PEOPLE[n.actor].name}回应了你参与的评论`:n.kind==='like'?'赞了你的评论':'回复了你的评论';
+ const description=n.kind==='palm'?`${PEOPLE[n.actor].name}${actors.length>1?'等'+actors.length+'人':''}向你击了个掌`:n.kind==='palm-response'?`${PEOPLE[n.actor].name}回应了你参与的评论`:n.kind==='like'?'赞了你的评论':'回复了你的评论';
  const content=deleted?'<div class="quote deleted-comment">原评论已删除</div>':kind==='like'?`<div class="quote">${esc(c.text)}</div>`:`<div class="notification-content">${esc(c.text)}</div>${ref?`<div class="quote">${PEOPLE[ref.author].name}：${esc(ref.text)}</div>`:''}<div class="notification-actions"><button class="pill" data-action="reply" data-id="${c.id}">${icon('chat',15)}回复</button><button class="pill ${liked?'active':''}" data-action="comment-like" data-id="${c.id}" aria-pressed="${!!liked}">${icon('heart',15,liked)}赞</button></div>`;
  return `<article class="notification-row notification-click" data-notification="${n.id}" role="link" tabindex="0" aria-label="${esc(description)}">${avatar(n.actor)}<div class="notification-main"><div class="notification-intro"><span class="notification-name">${PEOPLE[n.actor].name}</span>${n.actor==='cheng'?'<span class="friend-badge">作者</span>':'<span class="friend-badge">你的好友</span>'}</div><div class="notification-meta">${description}&nbsp; ${esc(n.time)}</div>${content}${n.kind==='palm'?renderPalmDMAction(n):''}</div><button class="note-thumb" data-action="open-notification" data-id="${n.id}" aria-label="查看原笔记"><img src="${NOTE.image}" alt="新相机笔记缩略图"></button></article>`;
  }).join('')||'<div class="empty">暂时没有新消息</div>'}</div></div>`;
@@ -91,10 +92,10 @@ function openEditor(id=null,respond=false,editing=false){
  closeEditor();replyTarget=id;const draftKey=role+':'+(editing?'edit:':respond?'response:':'')+(id||'new'),root=document.getElementById('editor-root');
  const responding=respond&&target?.palm&&target.author===role;
  const count=responding?target.palm.participants.length:0,canNotify=responding&&count>0&&target.palm.status==='open';
- root.innerHTML=`<div class="composer-overlay"><form class="composer comment-composer" role="dialog" aria-modal="true" aria-label="${editing?'编辑评论':responding?'回应大家':target?'回复评论':'发表评论'}"><textarea id="comment-text" aria-label="${editing?'评论内容':target?'回复内容':'评论内容'}" maxlength="2000" placeholder="${target&&!editing?'回复 @'+PEOPLE[target.author].name:'说点什么...'}">${esc(drafts.get(draftKey)??(editing?target.text:responding?'样片来啦！阴天肤色挺自然，已经补在笔记里了。':''))}</textarea><div class="composer-footer"><button type="button" id="comment-voice" aria-label="语音评论">${icon('mic',24)}</button><button type="button" id="comment-image" aria-label="添加图片">${icon('image',24)}</button><button type="button" id="comment-mention" class="mention-icon" aria-label="提及用户">@</button><button type="button" id="comment-emoji" aria-label="评论表情">${icon('smile',25)}</button><button type="button" id="comment-plus" aria-label="更多评论选项">${icon('plus',24)}</button>${!target?`<label class="palm-toolbar-toggle" title="击掌评论"><input id="leave-palm" type="checkbox" role="switch" aria-label="击掌评论"><span aria-hidden="true">${menuGlyph('hand',24)}</span></label>`:''}<span class="counter" id="comment-counter" hidden></span><button class="send" id="send-comment" disabled>${editing?'保存':'发送'}</button></div>${!target?'<p class="palm-help" id="palm-help" hidden>击掌评论：别人可右滑击掌，有进展时可提醒参与者。</p>':''}${responding?`<label class="palm-reminder"><input id="notify-palm" type="checkbox" ${canNotify?'checked':'disabled'}>提醒${count}位参与者</label>${target.palm.status!=='open'?'<p class="palm-help">击掌已关闭，不再发送群体提醒。</p>':!count?'<p class="palm-help">暂无击掌，先发布公开回复。</p>':''}`:''}<div class="composer-emoji-strip">${['😂','😭','😡','🥰','😘','🥳','😤','🥺'].map(emoji=>`<button type="button" data-comment-emoji="${emoji}" aria-label="添加${emoji}">${emoji}</button>`).join('')}</div></form></div>`;
+ root.innerHTML=`<div class="composer-overlay"><form class="composer comment-composer" role="dialog" aria-modal="true" aria-label="${editing?'编辑评论':responding?'回应大家':target?'回复评论':'发表评论'}"><textarea id="comment-text" aria-label="${editing?'评论内容':target?'回复内容':'评论内容'}" maxlength="2000" placeholder="${target&&!editing?'回复 @'+PEOPLE[target.author].name:'说点什么...'}">${esc(drafts.get(draftKey)??(editing?target.text:responding?'原来这么多同好！我一般周六上午去，下次在岩馆遇到可以打个招呼～':''))}</textarea><div class="composer-footer"><button type="button" id="comment-voice" aria-label="语音评论">${icon('mic',24)}</button><button type="button" id="comment-image" aria-label="添加图片">${icon('image',24)}</button><button type="button" id="comment-mention" class="mention-icon" aria-label="提及用户">@</button><button type="button" id="comment-emoji" aria-label="评论表情">${icon('smile',25)}</button><button type="button" id="comment-plus" aria-label="更多评论选项">${icon('plus',24)}</button>${!target?`<label class="palm-toolbar-toggle" title="邀请击掌"><input id="leave-palm" type="checkbox" role="switch" aria-label="邀请击掌"><span aria-hidden="true">${menuGlyph('hand',24)}</span></label>`:''}<span class="counter" id="comment-counter" hidden></span><button class="send" id="send-comment" disabled>${editing?'保存':'发送'}</button></div>${responding?`<label class="palm-reminder"><input id="notify-palm" type="checkbox" ${canNotify?'checked':'disabled'}>提醒${count}位参与者</label>${target.palm.status!=='open'?'<p class="palm-help">击掌已关闭，不再发送群体提醒。</p>':!count?'<p class="palm-help">暂无击掌，先发布公开回复。</p>':''}`:''}<div class="composer-emoji-strip">${['😂','😭','😡','🥰','😘','🥳','😤','🥺'].map(emoji=>`<button type="button" data-comment-emoji="${emoji}" aria-label="添加${emoji}">${emoji}</button>`).join('')}</div></form></div>`;
  const text=document.getElementById('comment-text'),toggle=document.getElementById('leave-palm');
  const update=()=>{drafts.set(draftKey,text.value);document.getElementById('send-comment').disabled=!text.value.trim();document.getElementById('comment-counter').textContent=`${text.value.length} / 2000`;};
- if(toggle)toggle.onchange=()=>{document.getElementById('palm-help').hidden=!toggle.checked;if(toggle.checked&&!text.value.trim())text.value='周末去试拍，回来补样片，想看的来击掌～';update();};
+ if(toggle)toggle.onchange=()=>{if(toggle.checked&&!text.value.trim())text.value='有没有也喜欢一个人去攀岩的？';update();};
  text.addEventListener('input',update);root.querySelector('form').addEventListener('submit',e=>{e.preventDefault();const success=editing?editComment(id,text.value):publishComment(text.value,{leavePalm:!!toggle?.checked,responding,notify:!!document.getElementById('notify-palm')?.checked});if(success)drafts.delete(draftKey);});
  root.querySelector('.composer-overlay').addEventListener('click',e=>{if(e.target.classList.contains('composer-overlay'))closeEditor();});
  const insert=value=>{const start=text.selectionStart,end=text.selectionEnd;text.setRangeText(value,start,end,'end');update();text.focus();};
@@ -125,15 +126,15 @@ function renderPalm(c){
  const people=closed?palmHistory(c):p.participants,count=people.length;
  if(closed&&!count)return '';
  const stack=count?`<span class="palm-avatar-stack" aria-hidden="true">${people.slice(0,3).map(person=>avatar(person,'palm-avatar')).join('')}</span>`:'';
- const label=closed?`${count}人曾击掌`:count?`${count}人击掌`:'击掌评论';
- return `<div class="palm-row" id="palm-${c.id}">${!own&&(joined||!closed)?`<button class="palm-mark ${joined?'palm-cancel':'palm-join'}" data-action="palm" data-id="${c.id}" aria-label="${joined?'取消击掌':'击掌'}" aria-pressed="${joined}">${palmStatusIcon(joined)}</button>`:`<span class="palm-mark" aria-hidden="true">${palmStatusIcon()}</span>`}${own?`<button class="palm-count" data-action="participants" data-id="${c.id}" ${count?'':'disabled'}>${stack}<span>${label}</span></button><button class="palm-respond" data-action="respond" data-id="${c.id}">回应大家</button>`:`<span class="palm-status ${joined?'joined':''}">${stack}${joined?`<span>已击掌</span><span> · ${count}人${closed?'曾击掌':''}</span>`:`<span>${label}</span>`}</span>`}</div>`;
+ const label=closed?`${count}人曾击掌`:`${count}人击掌`;
+ return `<div class="palm-row" id="palm-${c.id}">${!own&&!closed?`<button class="palm-mark ${joined?'palm-cancel':'palm-join'}" data-action="palm" data-id="${c.id}" aria-label="${joined?'取消击掌':'击掌'}" aria-pressed="${joined}">${palmStatusIcon(joined)}</button>`:`<span class="palm-mark" aria-hidden="true">${palmStatusIcon(joined)}</span>`}${own?`<button class="palm-count" data-action="participants" data-id="${c.id}" ${count?'':'disabled'}>${stack}<span>${label}</span></button><button class="palm-respond" data-action="respond" data-id="${c.id}">回应大家</button>`:`<span class="palm-status ${joined?'joined':''}">${stack}${joined&&!closed?`<span>已击掌</span><span> · ${count}人${closed?'曾击掌':''}</span>`:`<span>${label}</span>`}</span>`}</div>`;
 }
 function canJoinPalm(c){return !!c?.palm&&c.author!==role&&c.palm.status==='open'&&!c.palm.participants.includes(role);}
 function togglePalm(id,options={}){
- const c=findComment(id);if(!c?.palm||c.author===role)return false;
+ const c=findComment(id);if(!c?.palm||c.author===role||activePalmMotion?.host?.classList.contains('colliding'))return false;
  const joined=c.palm.participants.includes(role);
  if(options.joinOnly&&joined||!joined&&c.palm.status!=='open')return false;
- const before=structuredClone(data);c.palm.history=palmHistory(c);
+ const before=structuredClone(data),actingRole=role,firstSuccess=!joined&&!data.palmSuccessHints?.[role];c.palm.history=palmHistory(c);
  toggleList(c.palm.participants,role);
  if(!joined){
   c.palm.history=[...new Set([...c.palm.history,role])];
@@ -141,10 +142,11 @@ function togglePalm(id,options={}){
   if(!n){n={id:newId('n'),kind:'palm',recipient:c.author,commentId:id,actors:[]};data.notifications.unshift(n);}
   n.actors=[...new Set([...(n.actors||[n.actor]).filter(Boolean),role])];n.actor=role;n.time='刚刚';
  }
+ if(!joined)(data.palmSuccessHints??={})[role]=true;
  // Cancellation keeps previously delivered notifications and all conversations intact.
  try{localStorage.setItem(STORAGE,JSON.stringify(data));}catch{data=before;showToast('击掌未提交成功，请重试');return false;}
- if(!options.deferRender){recordScroll();render();if(!joined)animatePalmCollision(id);}
- showToast(joined?'已取消击掌，不再接收后续提醒':'已击掌，有进展时会收到提醒');return true;
+ if(!options.deferRender){recordScroll();if(joined)render();else animatePalmCollision(id,()=>{if(role===actingRole)render();});}
+ if(joined)showToast('已取消击掌');else setTimeout(()=>{if(role===actingRole)showToast(firstSuccess?'对方回应大家时，会通知你。':'已击掌');},560);return true;
 }
 let activePalmMotion;
 function clearPalmMotion(){if(activePalmMotion){activePalmMotion.layer.remove();activePalmMotion.host?.classList.remove('colliding','swipe-collision');activePalmMotion=null;}}
@@ -153,8 +155,8 @@ function palmGeometry(host,dx=0){
  return {x:(rect.width?rect.left:base.left+dx)-phone.left,y:(rect.width?rect.top:base.top)-phone.top,size:rect.width||(source.classList.contains('small')?24:39)};
 }
 function createPalmMotion(host){
- clearPalmMotion();const layer=document.createElement('div');layer.className='palm-motion-layer';layer.setAttribute('aria-hidden','true');layer.innerHTML=avatar(role,'collision-b')+'<span class="palm-drag-prompt palm-enter-prompt">右滑击掌</span><span class="palm-drag-prompt palm-release-prompt" hidden>松手击掌</span>';document.querySelector('.phone').append(layer);
- activePalmMotion={host,layer,b:layer.querySelector('img'),prompt:layer.querySelector('.palm-enter-prompt'),releasePrompt:layer.querySelector('.palm-release-prompt')};return activePalmMotion;
+ clearPalmMotion();const layer=document.createElement('div');layer.className='palm-motion-layer';layer.setAttribute('aria-hidden','true');layer.innerHTML='<div class="palm-avatar-unit unit-b">'+avatar(role,'collision-b')+'</div>'+'<span class="palm-drag-prompt palm-enter-prompt">右滑击掌</span><span class="palm-drag-prompt palm-release-prompt" hidden>松手击掌</span>';document.querySelector('.phone').append(layer);
+ activePalmMotion={host,layer,b:layer.querySelector('.unit-b'),prompt:layer.querySelector('.palm-enter-prompt'),releasePrompt:layer.querySelector('.palm-release-prompt')};return activePalmMotion;
 }
 function updatePalmDrag(host,motion,dx){
  const g=palmGeometry(host,dx),base=g.x-dx,entry=g.size+21,travel=entry*Math.min(1,dx/88);
@@ -177,14 +179,19 @@ function retreatPalmMotion(host,motion){
 function animatePalmCollision(id,finish=()=>{},distance=0,motion=null){
  const host=app.querySelector(`[data-swipe-comment="${id}"]`),c=findComment(id);if(!host||!c){finish();return;}
  const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
- motion??=createPalmMotion(host);const g=palmGeometry(host,distance);
- const base=motion.base??g.x-distance,bstart=motion.bx??base-g.size-21,bhit=base+2,ahit=base+g.size-6;
- motion.prompt.hidden=true;motion.releasePrompt.hidden=true;motion.b.style.filter='';const layer=motion.layer;layer.classList.add('palm-collision');host.classList.add('colliding');host.classList.toggle('swipe-collision',distance>0);
- layer.style.setProperty('--b-start',bstart+'px');layer.style.setProperty('--a-start',g.x+'px');layer.style.setProperty('--b-hit',bhit+'px');layer.style.setProperty('--a-hit',ahit+'px');layer.style.setProperty('--a-rest',base+'px');layer.style.setProperty('--b-exit',(base-g.size-21)+'px');host.style.setProperty('--swipe-distance',distance+'px');
+ motion??=createPalmMotion(host);const g=palmGeometry(host,distance),swiped=distance>0;
+ const base=motion.base??g.x-distance,bstart=motion.bx??base-g.size-21;
+ const bhit=swiped?base+2:Math.max(0,base-g.size+2),ahit=bhit+g.size-2;
+ motion.prompt.hidden=true;motion.releasePrompt.hidden=true;motion.b.style.filter='';
+ const layer=motion.layer;layer.classList.add('palm-collision');host.classList.add('colliding');host.classList.toggle('swipe-collision',swiped);
+ for(const [key,value] of Object.entries({'b-start':bstart,'a-start':g.x,'b-hit':bhit,'a-hit':ahit,'a-rest':base,'b-exit':base-g.size-21}))layer.style.setProperty('--'+key,value+'px');
+ host.style.setProperty('--swipe-distance',distance+'px');layer.style.setProperty('--avatar-size',g.size+'px');
  const b=motion.b;b.style.left='0';b.style.top=g.y+'px';b.style.width=b.style.height=g.size+'px';b.style.transform='';b.classList.add('avatar-hit-b');
- layer.insertAdjacentHTML('beforeend',`${avatar(c.author,'collision-a avatar-hit-a')}<span class="collision-hands"><span>✋</span><span>🤚</span></span>`);
- const a=layer.querySelector('.collision-a');a.style.top=g.y+'px';a.style.width=a.style.height=g.size+'px';const hands=layer.querySelector('.collision-hands');hands.style.left=(base+g.size-22)+'px';hands.style.top=(g.y+g.size*.25)+'px';
- setTimeout(()=>{if(activePalmMotion===motion)clearPalmMotion();host.classList.remove('colliding','swipe-collision');finish();},reduced?20:640);
+ b.insertAdjacentHTML('beforeend','<span class="bound-palm palm-b" aria-hidden="true">✋</span>');
+ layer.insertAdjacentHTML('beforeend',`<div class="palm-avatar-unit unit-a avatar-hit-a">${avatar(c.author,'collision-a')}<span class="bound-palm palm-a" aria-hidden="true">🤚</span></div>`);
+ const a=layer.querySelector('.unit-a');a.style.top=g.y+'px';a.style.width=a.style.height=g.size+'px';
+ setTimeout(()=>{if(activePalmMotion!==motion||!host.isConnected)return;const row=host.querySelector('.palm-row');if(row){row.outerHTML=renderPalm(c);const control=host.querySelector('.palm-mark[data-action="palm"]');if(control)control.onclick=e=>{e.stopPropagation();togglePalm(id);};}},reduced?10:350);
+ setTimeout(()=>{if(activePalmMotion===motion)clearPalmMotion();host.classList.remove('colliding','swipe-collision');finish();},reduced?20:560);
 }
 function openNotification(id){const n=data.notifications.find(n=>n.id===id);if(!n)return;if(!findComment(n.commentId)){navigate('note');showToast('原评论已删除');return;}navigate('note',{target:n.commentId});}
 function openSheet(title,body,half=false){closeEditor();const root=document.getElementById('editor-root');root.innerHTML=`<div class="composer-overlay"><section class="composer palm-sheet ${half?'comment-actions-sheet':''}" role="dialog" aria-modal="true" aria-label="${title}">${half?'<div class="sheet-handle" aria-hidden="true"></div>':`<div class="composer-head"><span>${title}</span><button id="close-sheet" class="close">关闭</button></div>`}${body}</section></div>`;const close=document.getElementById('close-sheet');if(close)close.onclick=closeEditor;root.querySelector('.composer-overlay').onclick=e=>{if(e.target.classList.contains('composer-overlay'))closeEditor();};root.onkeydown=e=>{if(e.key==='Escape')closeEditor();if(e.key==='Tab'){const nodes=[...root.querySelectorAll('button:not(:disabled),input:not(:disabled)')];if(e.shiftKey&&document.activeElement===nodes[0]){e.preventDefault();nodes.at(-1).focus();}else if(!e.shiftKey&&document.activeElement===nodes.at(-1)){e.preventDefault();nodes[0].focus();}}};root.querySelector('button')?.focus();}
@@ -221,7 +228,7 @@ function bindCommentMenus(){
   if(!submit){reset();return;}
   if(!togglePalm(id,{joinOnly:true,deferRender:true})){reset();return;}
   host.querySelector('.palm-swipe-hint')?.remove();
-  const currentRole=role;animatePalmCollision(id,()=>{motion=null;reset();setTimeout(()=>{if(host.isConnected&&role===currentRole){recordScroll();render();}},280);},distance,motion);
+  const currentRole=role;animatePalmCollision(id,()=>{motion=null;reset();if(host.isConnected&&role===currentRole){recordScroll();render();}},distance,motion);
  });
  host.addEventListener('pointercancel',reset);
  host.addEventListener('lostpointercapture',()=>{if(start)reset();});
@@ -232,8 +239,8 @@ function bindCommentMenus(){
  });
  if(!data.palmHints?.[role]){
   const first=[...app.querySelectorAll('[data-swipe-comment]')].find(el=>canJoinPalm(findComment(el.dataset.swipeComment)));
-  if(first){const hint=document.createElement('div');hint.className='palm-swipe-hint';hint.textContent='右滑头像、昵称或评论正文，即可击掌 →';first.querySelector('.comment-fixed-meta').append(hint);
-   const mark=()=>{(data.palmHints??={})[role]=true;save();palmHintObserver?.disconnect();};
+  if(first){const hint=document.createElement('div');hint.className='palm-swipe-hint';hint.textContent='有共鸣？击个掌';first.querySelector('.palm-row').append(hint);
+   const mark=()=>{(data.palmHints??={})[role]=true;save();palmHintObserver?.disconnect();setTimeout(()=>hint.remove(),2400);};
    if(window.IntersectionObserver){palmHintObserver=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting))mark();},{root:app.querySelector('.scroll'),threshold:.5});palmHintObserver.observe(hint);}else mark();
   }
  }
@@ -247,7 +254,7 @@ function menuGlyph(name,size=23){
 function openPalmMenu(id){
  const c=findComment(id);if(!c)return;const own=c.author===role,joined=c.palm?.participants.includes(role);
  const row=(name,text,key,extra='')=>`<button class="palm-menu-action ${extra}" id="${key}">${menuGlyph(name)}<span>${text}</span></button>`;
- openSheet('评论操作',`<div class="sheet-share-people">${Object.keys(PEOPLE).filter(p=>p!==role).map(p=>`<button data-sheet-peer="${p}">${avatar(p)}<span>${PEOPLE[p].name}</span></button>`).join('')}</div><div class="comment-action-group share-actions">${row('chat','分享到微信','menu-wechat')}${row('chat','问点点','menu-ask')}${row('search','搜索','menu-search')}</div>${own?`<div class="comment-action-group palm-setting-group"><label class="palm-setting-row">${menuGlyph('hand')}<span>击掌评论</span><input id="toggle-palm-type" type="checkbox" role="switch" aria-label="击掌评论" ${c.palm?.status==='open'?'checked':''}><i class="setting-switch" aria-hidden="true"></i></label></div>`:c.palm&&(joined||c.palm.status==='open')?`<div class="comment-action-group">${row('hand',joined?'取消击掌':'击掌','menu-palm')}</div>`:''}<div class="comment-action-group regular-actions">${row('chat','回复','menu-reply')}${row('star',c.savedBy?.includes(role)?'取消收藏':'收藏','menu-save')}${row('copy','复制','menu-copy')}${row('quote','引用发笔记','menu-quote')}${row('send','私信','menu-private')}</div><div class="comment-action-group">${own?row('pen','编辑评论','edit-comment')+row('delete','删除评论','delete-palm','danger'):row('heart',c.likedBy.includes(role)?'取消点赞':'点赞','menu-like')+row('neutral','不喜欢','menu-dislike')+row('report','举报','menu-report')}</div>`,true);
+ openSheet('评论操作',`<div class="sheet-share-people">${Object.keys(PEOPLE).filter(p=>p!==role).map(p=>`<button data-sheet-peer="${p}">${avatar(p)}<span>${PEOPLE[p].name}</span></button>`).join('')}</div><div class="comment-action-group share-actions">${row('chat','分享到微信','menu-wechat')}${row('chat','问点点','menu-ask')}${row('search','搜索','menu-search')}</div>${own?`<div class="comment-action-group palm-setting-group"><label class="palm-setting-row">${menuGlyph('hand')}<span>邀请击掌</span><input id="toggle-palm-type" type="checkbox" role="switch" aria-label="邀请击掌" ${c.palm?.status==='open'?'checked':''}><i class="setting-switch" aria-hidden="true"></i></label></div>`:c.palm&&(joined||c.palm.status==='open')?`<div class="comment-action-group">${row('hand',joined?'取消击掌':'击掌','menu-palm')}</div>`:''}<div class="comment-action-group regular-actions">${row('chat','回复','menu-reply')}${row('star',c.savedBy?.includes(role)?'取消收藏':'收藏','menu-save')}${row('copy','复制','menu-copy')}${row('quote','引用发笔记','menu-quote')}${row('send','私信','menu-private')}</div><div class="comment-action-group">${own?row('pen','编辑评论','edit-comment')+row('delete','删除评论','delete-palm','danger'):row('heart',c.likedBy.includes(role)?'取消点赞':'点赞','menu-like')+row('neutral','不喜欢','menu-dislike')+row('report','举报','menu-report')}</div>`,true);
  document.getElementById('menu-reply').onclick=()=>openEditor(id);
  const edit=document.getElementById('edit-comment');if(edit)edit.onclick=()=>openEditor(id,false,true);
  const type=document.getElementById('toggle-palm-type');if(type)type.onchange=()=>setPalmType(id,type.checked,{keepSheet:true});
@@ -266,7 +273,7 @@ function setPalmType(id,enabled,options={}){
  if(!enabled&&!c.palm.history.length)delete c.palm;else c.palm.status=enabled?'open':'closed';
  try{localStorage.setItem(STORAGE,JSON.stringify(data));}catch{data=before;showToast('设置未保存，请重试');return false;}
  closeEditor();recordScroll();render();if(options.keepSheet){openPalmMenu(id);document.querySelector('.comment-actions-sheet').scrollTop=scroll;}
- showToast(enabled?'已设为击掌评论':c.palm?'已关闭击掌，历史记录与交流已保留':'已恢复普通评论');return true;
+ showToast(enabled?'已开启邀请击掌':c.palm?'已关闭击掌，历史记录与交流已保留':'已恢复普通评论');return true;
 }
 function endPalm(id){return setPalmType(id,false);}
 function deletePalm(id){const c=findComment(id);if(!c||c.author!==role)return false;c.deleted=true;if(c.palm)c.palm.status='closed';save();closeEditor();recordScroll();render();showToast(c.palm?'评论已删除，击掌已失效':'评论已删除');return true;}
@@ -303,7 +310,7 @@ function sendPalmDM(commentId,person){
 function rememberPrivatePeer(commentId,person){const n=data.notifications.find(n=>n.kind==='palm'&&n.commentId===commentId&&n.recipient===role);if(n){n.privatePeer=person;save();}}
 function renderPalmDM(m){
  const deleted=!findComment(m.commentId);
- return `<div class="palm-dm-reference"><div class="palm-dm-title">来自这条评论</div><button class="palm-dm-source" data-action="palm-source" data-id="${m.commentId}" aria-label="返回笔记并定位原击掌评论"><img src="${esc(m.noteImage)}" alt="原笔记缩略图"><span><span class="palm-dm-quote ${deleted?'deleted-comment':''}">${deleted?'原评论已删除':esc(m.commentSummary)}</span></span></button></div><button class="palm-dm-play" data-action="play-palm-dm" data-id="${m.id}" aria-label="播放击掌动画，可点击重播"><span class="palm-dm-hands" aria-hidden="true"><span>✋</span><span>🤚</span></span><span>来，击个掌！</span></button>`;
+ return `<div class="palm-dm-reference"><div class="palm-dm-title">来自这条评论</div><button class="palm-dm-source" data-action="palm-source" data-id="${m.commentId}" aria-label="返回笔记并定位原评论"><img src="${esc(m.noteImage)}" alt="原笔记缩略图"><span><span class="palm-dm-quote ${deleted?'deleted-comment':''}">${deleted?'原评论已删除':esc(m.commentSummary)}</span></span></button></div><button class="palm-dm-play" data-action="play-palm-dm" data-id="${m.id}" aria-label="播放击掌动画，可点击重播"><span class="palm-dm-hands" aria-hidden="true"><span>✋</span><span>🤚</span></span><span>来，击个掌！</span></button>`;
 }
 function playPalmDM(button){
  if(button.classList.contains('playing'))return;

@@ -13,10 +13,10 @@ const participants=()=>state().comments.find(c=>c.id==='c2').palm.participants;
 (async()=>{
  // Start with an existing ordinary comment with replies and preserve all its fields.
  const initialCount=state().comments.length;const before=state().comments.find(c=>c.id==='c2'),replies=state().comments.filter(c=>c.parent==='c2');
- ev("rawComment('c2').images=['assets/camera.jpg']");menu();assert.equal(d.querySelector('.palm-setting-row>span').textContent,'击掌评论');assert(!d.querySelector('#toggle-palm-type').checked);click('#toggle-palm-type');click('.composer-overlay');
+ ev("rawComment('c2').images=['assets/camera.jpg']");menu();assert.equal(d.querySelector('.palm-setting-row>span').textContent,'邀请击掌');assert(!d.querySelector('#toggle-palm-type').checked);click('#toggle-palm-type');click('.composer-overlay');
  assert.equal(state().comments.length,initialCount);assert.equal(state().comments.find(c=>c.id==='c2').text,before.text);assert.deepEqual(state().comments.filter(c=>c.parent==='c2'),replies);assert.deepEqual(state().comments.find(c=>c.id==='c2').images,['assets/camera.jpg']);assert.deepEqual(participants(),[]);
  swipe(120);assert.deepEqual(participants(),[]); // own comment cannot join
- ev("switchRole('qing')");assert(d.querySelector('.palm-swipe-hint'));assert(!d.querySelector('#palm-c2 [data-action="palm"]'));assert.equal(ev("setPalmType('c2',false)"),false);
+ ev("switchRole('qing')");assert(d.querySelector('.palm-swipe-hint'));assert(d.querySelector('#palm-c2 [data-action="palm"] svg')); assert.equal(ev("setPalmType('c2',false)"),false);
  menu();assert(!d.querySelector('#toggle-palm-type'));assert(d.querySelector('#menu-palm'));click('.composer-overlay');
  // Vertical/left/short/cancel gestures do not submit or open long-press menu.
  swipe(8,100);swipe(-120);swipe(45);await pause(310);swipe(120,0,'pointercancel');await pause(310);assert.deepEqual(participants(),[]);assert(!host().classList.contains('dragging'));
@@ -26,7 +26,7 @@ const participants=()=>state().comments.find(c=>c.id==='c2').palm.participants;
  assert.equal(host().querySelector('.comment-swipe-surface').style.transform,'');assert(!d.querySelector('.palm-swipe-hint'));swipe(125);assert.deepEqual(participants(),['qing']);assert.equal(state().notifications.filter(n=>n.kind==='palm').length,1);
  // No automatic private message; original public and private flows still connect.
  assert.equal(Object.values(state().chats).flat().filter(m=>m.kind==='palm-dm').length,0);
- ev("switchRole('lin');navigate('likes')");assert(d.querySelector('#app').textContent.includes('阿青向你的评论击了个掌'));click('[data-action="palm-dm"]');const chats=JSON.stringify(state().chats);assert.equal(Object.values(state().chats).flat().filter(m=>m.kind==='palm-dm').length,1);assert(!d.querySelector('.palm-dm-note-title'));
+ ev("switchRole('lin');navigate('likes')");assert(d.querySelector('#app').textContent.includes('阿青向你击了个掌'));click('[data-action="palm-dm"]');const chats=JSON.stringify(state().chats);assert.equal(Object.values(state().chats).flat().filter(m=>m.kind==='palm-dm').length,1);assert(!d.querySelector('.palm-dm-note-title'));
  ev("navigate('note');openEditor('c2',true)");assert(d.querySelector('#notify-palm').checked);ev("publishComment('样片来啦！',{responding:true,notify:true})");const notices=state().notifications.filter(n=>n.kind==='palm-response').length;
  // Closing preserves records, replies and private messages; suppresses reminders; reopening doesn't backfill.
  menu();click('#toggle-palm-type');click('.composer-overlay');assert.equal(ev("findComment('c2').palm.status"),'closed');assert.deepEqual(participants(),['qing']);assert.equal(JSON.stringify(state().chats),chats);
