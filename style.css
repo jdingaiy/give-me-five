@@ -99,3 +99,16 @@
 .target-comment:before{content:"";position:absolute;inset:-6px -6px;background:#f6f6f7;border-radius:12px;z-index:-1;pointer-events:none}
 .target-comment>.comment-swipe .comment-swipe-surface{background:transparent}
 @media(max-width:360px){.comment-composer .composer-footer:has(.palm-reminder){gap:8px}.comment-composer .composer-footer .palm-reminder{font-size:11px}}
+
+/* Screenshot keyboard and composer travel as a single bottom panel. */
+.composer-keyboard-panel{width:100%;flex:0 0 auto;max-height:100%;display:flex;flex-direction:column;animation:composer-keyboard-in 280ms cubic-bezier(.22,.75,.28,1) both;will-change:transform}
+.composer-keyboard-panel .comment-composer{flex-shrink:1;min-height:0;overflow-y:auto;padding-bottom:10px;box-shadow:none}
+.ios-keyboard-image{display:block;width:100%;height:auto;aspect-ratio:750 / 672;flex:0 0 auto;pointer-events:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.keyboard-composer-overlay{animation:composer-backdrop-in 280ms ease-out both}
+.keyboard-composer-overlay.is-closing{animation:composer-backdrop-out 220ms ease-in both;pointer-events:none}
+.keyboard-composer-overlay.is-closing .composer-keyboard-panel{animation:composer-keyboard-out 220ms cubic-bezier(.4,0,.8,.3) both}
+@keyframes composer-keyboard-in{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes composer-keyboard-out{from{transform:translateY(0)}to{transform:translateY(100%)}}
+@keyframes composer-backdrop-in{from{background-color:#0000}to{background-color:#0004}}
+@keyframes composer-backdrop-out{from{background-color:#0004}to{background-color:#0000}}
+@media(prefers-reduced-motion:reduce){.composer-keyboard-panel,.keyboard-composer-overlay,.keyboard-composer-overlay.is-closing,.keyboard-composer-overlay.is-closing .composer-keyboard-panel{animation:none}}
